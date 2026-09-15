@@ -1,6 +1,6 @@
 # SEOblog
 
-Automated affiliate blog network — generates, translates, schedules, and publishes SEO-optimized affiliate posts across multiple domains and languages.
+Automated affiliate blog network — generates, schedules, and publishes SEO-optimized affiliate posts across dedicated country domains, each written in its own language.
 
 See [docs/spec.md](docs/spec.md) for the full project specification.
 

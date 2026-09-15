@@ -15,7 +15,7 @@ After finishing any numbered item under a phase file's "Steps" section:
 
 **2. Summarize in the session.** A few sentences stating what was built or changed, and confirming it was verified. Don't restate the step's instructions. Tone:
 
-> Done — Domains, KeywordClusters, Posts, and Media collections are registered and appear in the admin sidebar. Localization is configured with en/de, and I confirmed editing a field in `de` doesn't touch the `en` value on the same document.
+> Done — Domains, KeywordClusters, Posts, and Media collections are registered and appear in the admin sidebar. Each domain has a single locale, and I confirmed two posts can share a slug on different domains but not on the same domain.
 
 **3. Check off the matching Acceptance Checklist item(s)** in that same phase file. The checklist is at the bottom of the file. Change:
 

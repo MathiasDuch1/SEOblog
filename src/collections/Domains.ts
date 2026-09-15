@@ -21,19 +21,11 @@ export const Domains: CollectionConfig = {
       },
     },
     {
-      name: 'defaultLocale',
+      name: 'locale',
       type: 'text',
       required: true,
-      defaultValue: 'en',
-    },
-    {
-      name: 'activeLocales',
-      type: 'text',
-      hasMany: true,
-      required: true,
-      defaultValue: ['en'],
       admin: {
-        description: 'Locale codes this domain publishes in, e.g. en, de',
+        description: 'The single language + country this domain publishes in, e.g. de-DE, en-GB',
       },
     },
     {

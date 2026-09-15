@@ -34,10 +34,6 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI || '',
     },
   }),
-  localization: {
-    locales: ['en', 'de'],
-    defaultLocale: 'en',
-  },
   plugins: [
     seoPlugin({
       collections: ['posts'],

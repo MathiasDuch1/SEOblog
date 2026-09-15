@@ -30,9 +30,8 @@ export const Posts: CollectionConfig = {
       name: 'slug',
       type: 'text',
       required: true,
-      localized: true,
       admin: {
-        description: 'URL segment, translated per locale',
+        description: 'URL segment, unique within the domain',
       },
     },
     {
@@ -73,41 +72,37 @@ export const Posts: CollectionConfig = {
     {
       name: 'intro',
       type: 'textarea',
-      localized: true,
     },
     {
       name: 'products',
       type: 'array',
       admin: {
         condition: (data) => data?.template === 'listicle',
-        description: 'Listicle template only — same number/order of products across every locale',
+        description: 'Listicle template only',
       },
       fields: [
         {
           name: 'title',
           type: 'text',
           required: true,
-          localized: true,
         },
         {
           name: 'description',
           type: 'textarea',
-          localized: true,
         },
         {
           name: 'imageUrl',
           type: 'text',
           admin: {
-            description: 'Pulled from the affiliate product feed — not localized',
+            description: 'Pulled from the affiliate product feed',
           },
         },
         {
           name: 'affiliateUrl',
           type: 'text',
           required: true,
-          localized: true,
           admin: {
-            description: 'Can vary by locale/region, e.g. amazon.com vs amazon.de',
+            description: "Link for this domain's country marketplace, e.g. amazon.de",
           },
         },
       ],
@@ -116,7 +111,6 @@ export const Posts: CollectionConfig = {
       name: 'body',
       type: 'richText',
       editor: lexicalEditor(),
-      localized: true,
       admin: {
         condition: (data) => data?.template === 'informational',
         description: 'Informational template only',
@@ -125,7 +119,6 @@ export const Posts: CollectionConfig = {
     {
       name: 'summary',
       type: 'textarea',
-      localized: true,
     },
   ],
 }
