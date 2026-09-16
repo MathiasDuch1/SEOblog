@@ -135,20 +135,20 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
 
 ## Acceptance Checklist
 
-- [ ] **Step 1:** `npm run seed` is idempotent and creates two niches and three single-locale domains (two sharing a niche) with content in their own language, draft/scheduled posts, and a slug shared across two domains
-- [ ] **Step 2:** `src/lib/cache/tags.ts` defines the tag contract, and revalidating one post's tag refreshes only that post
-- [ ] **Step 3:** `getDomainByHostname` resolves known hosts (ignoring port) and returns `null` for unknown ones
-- [ ] **Step 4:** `src/proxy.ts` rewrites public paths by hostname only (no locale segment) and does no database access
-- [ ] **Step 4:** `/admin` and `/api` are reachable only on `ADMIN_HOSTNAME` and return 404 on blog domains
-- [ ] **Step 4:** Non-production environments send `X-Robots-Tag: noindex, nofollow`
-- [ ] **Step 5:** Each domain serves its front page at `/` with `<html lang>` set to its locale; unknown hosts 404 without leaking any domain's content
-- [ ] **Step 6:** Domains render with their own branding tokens, UI strings in their language, and country-specific date formatting, with no client components in the frontend
-- [ ] **Step 7:** The front page lists only that domain's published posts, with working pagination
-- [ ] **Step 8:** Posts resolve by domain + slug at `/{slug}`; drafts 404; the shared slug renders different posts per domain; templates don't fetch their own data
-- [ ] **Step 9:** Listicles render products in order with `next/image` and `rel="sponsored nofollow noopener"` Buy now links in the domain's language
-- [ ] **Step 10:** Informational bodies render server-side with typography styles, and off-site links are marked sponsored
-- [ ] **Step 11:** A per-domain `pages` collection serves legal pages linked from the footer, with slugs unique across posts and pages within a domain
-- [ ] **Step 12:** `generateMetadata` uses SEO plugin fields with an absolute canonical and `og:locale`, no hreflang, and valid JSON-LD with `inLanguage`
+- [x] **Step 1:** `npm run seed` is idempotent and creates two niches and three single-locale domains (two sharing a niche) with content in their own language, draft/scheduled posts, and a slug shared across two domains
+- [x] **Step 2:** `src/lib/cache/tags.ts` defines the tag contract, and revalidating one post's tag refreshes only that post
+- [x] **Step 3:** `getDomainByHostname` resolves known hosts (ignoring port) and returns `null` for unknown ones
+- [x] **Step 4:** `src/proxy.ts` rewrites public paths by hostname only (no locale segment) and does no database access
+- [x] **Step 4:** `/admin` and `/api` are reachable only on `ADMIN_HOSTNAME` and return 404 on blog domains
+- [x] **Step 4:** Non-production environments send `X-Robots-Tag: noindex, nofollow`
+- [x] **Step 5:** Each domain serves its front page at `/` with `<html lang>` set to its locale; unknown hosts 404 without leaking any domain's content
+- [x] **Step 6:** Domains render with their own branding tokens, UI strings in their language, and country-specific date formatting, with no client components in the frontend
+- [x] **Step 7:** The front page lists only that domain's published posts, with working pagination
+- [x] **Step 8:** Posts resolve by domain + slug at `/{slug}`; drafts 404; the shared slug renders different posts per domain; templates don't fetch their own data
+- [x] **Step 9:** Listicles render products in order with `next/image` and `rel="sponsored nofollow noopener"` Buy now links in the domain's language
+- [x] **Step 10:** Informational bodies render server-side with typography styles, and off-site links are marked sponsored
+- [x] **Step 11:** A per-domain `pages` collection serves legal pages linked from the footer, with slugs unique across posts and pages within a domain
+- [x] **Step 12:** `generateMetadata` uses SEO plugin fields with an absolute canonical and `og:locale`, no hreflang, and valid JSON-LD with `inLanguage`
 - [ ] **Step 13:** Unknown slugs return a branded 404 in the domain's language with status 404; async segments have `loading.tsx` and `error.tsx`
-- [ ] **Step 14:** Each domain serves a valid sitemap (splitting into an index above the chunk size) and an environment-aware `robots.txt`
-- [ ] **Step 15:** `npm run build` passes and Lighthouse Performance, SEO, and Accessibility are all ≥ 90 on a listicle page
+- [x] **Step 14:** Each domain serves a valid sitemap (splitting into an index above the chunk size) and an environment-aware `robots.txt`
+- [x] **Step 15:** `npm run build` passes and Lighthouse Performance, SEO, and Accessibility are all ≥ 90 on a listicle page

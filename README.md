@@ -25,7 +25,17 @@ npm run dev
 
 `DATABASE_URI` is the Session pooler URI of the Supabase **development** project. The `R2_*` variables come from a Cloudflare R2 bucket and an API token with read/write access to it.
 
-The site runs at `localhost:3000`, the Payload admin at `localhost:3000/admin`. On first visit to `/admin`, create the first admin user.
+The Payload admin runs at `localhost:3000/admin` — `ADMIN_HOSTNAME` is the only hostname that serves `/admin`, `/api`, and `/preview`. On first visit to `/admin`, create the first admin user.
+
+Public sites are served per hostname. After `npm run seed`, the development domains are:
+
+| Hostname | Locale | Niche |
+|---|---|---|
+| `alpha.localhost:3000` | `en-US` | Spirituality |
+| `beta.localhost:3000` | `da-DK` | Spirituality |
+| `gamma.localhost:3000` | `en-US` | Wellness (seed-only fixture) |
+
+Browsers and curl resolve `*.localhost` to 127.0.0.1 with no `/etc/hosts` changes.
 
 ## Querying content
 
@@ -46,6 +56,7 @@ Payload's Local API skips access control by default, so a plain `payload.find({ 
 | Script | Purpose |
 |---|---|
 | `npm run dev` | Start the dev server |
+| `npm run seed` | Seed development niches, domains, posts, and legal pages (idempotent) |
 | `npm run build` | Production build |
 | `npm run lint` | Run ESLint |
 | `npm run generate:types` | Regenerate `src/payload-types.ts` from the Payload config (committed) |

@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
-import { ValidationError } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+
+import { assertSlugIsFreeOnDomain } from '../lib/slugs'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -16,38 +17,9 @@ export const Posts: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [
-      // Slugs are unique per domain; the same slug on another domain is allowed.
-      async ({ data, originalDoc, req }) => {
-        const domainValue = data?.domain ?? originalDoc?.domain
-        const domain = typeof domainValue === 'object' && domainValue !== null ? domainValue.id : domainValue
-        const slug = data?.slug ?? originalDoc?.slug
-        if (!domain || !slug) return data
-
-        const existing = await req.payload.find({
-          collection: 'posts',
-          where: {
-            and: [
-              { domain: { equals: domain } },
-              { slug: { equals: slug } },
-              ...(originalDoc?.id ? [{ id: { not_equals: originalDoc.id } }] : []),
-            ],
-          },
-          limit: 1,
-          depth: 0,
-          pagination: false,
-          overrideAccess: true,
-          req,
-        })
-
-        if (existing.docs.length > 0) {
-          throw new ValidationError({
-            collection: 'posts',
-            errors: [{ message: 'Another post on this domain already uses this slug', path: 'slug' }],
-            req,
-          })
-        }
-
-        return data
+      async (args) => {
+        await assertSlugIsFreeOnDomain({ ...args, collection: 'posts' })
+        return args.data
       },
     ],
   },

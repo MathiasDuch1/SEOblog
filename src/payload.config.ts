@@ -12,6 +12,7 @@ import { Domains } from './collections/Domains'
 import { KeywordClusters } from './collections/KeywordClusters'
 import { Media } from './collections/Media'
 import { Niches } from './collections/Niches'
+import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { postUrl } from './lib/urls'
@@ -26,7 +27,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Niches, Domains, KeywordClusters, Posts],
+  collections: [Users, Media, Niches, Domains, KeywordClusters, Posts, Pages],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -62,7 +63,7 @@ export default buildConfig({
       },
     }),
     seoPlugin({
-      collections: ['posts'],
+      collections: ['posts', 'pages'],
       uploadsCollection: 'media',
       tabbedUI: true,
       generateTitle: async ({ doc, req }) => {
@@ -77,8 +78,9 @@ export default buildConfig({
         return domain ? `${doc.title} | ${domain.name}` : doc.title
       },
       generateDescription: ({ doc }) => {
-        const intro: string = doc?.intro ?? ''
-        return intro.length > 160 ? `${intro.slice(0, 157).trimEnd()}…` : intro
+        // Posts have an intro; pages fall back to their title.
+        const source: string = doc?.intro ?? doc?.title ?? ''
+        return source.length > 160 ? `${source.slice(0, 157).trimEnd()}…` : source
       },
       generateURL: async ({ doc, req }) => {
         const domainValue = doc?.domain

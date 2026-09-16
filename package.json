@@ -13,7 +13,8 @@
     "generate:importmap": "payload generate:importmap",
     "migrate": "payload migrate",
     "migrate:create": "payload migrate:create",
-    "migrate:status": "payload migrate:status"
+    "migrate:status": "payload migrate:status",
+    "seed": "payload run src/scripts/seed.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.89.0",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

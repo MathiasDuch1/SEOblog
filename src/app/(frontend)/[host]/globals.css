@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/*
+ * Brand colors reach components as Tailwind tokens (`bg-primary`, `text-accent`), never as
+ * hardcoded hex values. `[host]/layout.tsx` sets `--brand-*` on <body> from the domain's
+ * branding group, so one component tree renders every domain in its own colors.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--brand-primary);
+  --color-accent: var(--brand-accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #18181b;
+  /* Fallbacks for a domain with no branding configured. */
+  --brand-primary: #3f3f46;
+  --brand-accent: #52525b;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
