@@ -59,19 +59,19 @@ These are open items from spec §9. Each phase lists the decisions it needs unde
 
 | Decision | Needed by | Recommended default | Choice |
 |---|---|---|---|
-| Supabase development project + region | 01 | Region closest to your planned hosting | |
-| R2 bucket + public media domain (e.g. `media.<yourdomain>`) | 01 | One dev bucket; production gets its own in 07 | |
-| Niches at launch, and which domains belong to each | 01 | Start with one niche; add more as domains are added | |
-| Supported locales (language + country codes) | 01 | Start with the launch countries, e.g. `en-GB`, `en-US`, `de-DE` | |
-| Dev test domains | 02 | `alpha.localhost` (`en-GB`), `beta.localhost` (`de-DE`), `gamma.localhost` (`en-US`) — covers two languages, plus two countries sharing a language | |
+| Supabase development project + region | 01 | Region closest to your planned hosting | `aws-1-eu-west-1` (Ireland), session pooler — dev project only |
+| R2 bucket + public media domain (e.g. `media.<yourdomain>`) | 01 | One dev bucket; production gets its own in 07 | `seoblog-media-dev`, served from its `r2.dev` URL; custom media domain deferred to 07 |
+| Niches at launch, and which domains belong to each | 01 | Start with one niche; add more as domains are added | **Spirituality** — both launch domains belong to it |
+| Supported locales (language + country codes) | 01 | Start with the launch countries, e.g. `en-GB`, `en-US`, `de-DE` | `en-US`, `da-DK` |
+| Dev test domains | 02 | `alpha.localhost` (`en-GB`), `beta.localhost` (`de-DE`), `gamma.localhost` (`en-US`) — covers two languages, plus two countries sharing a language | `alpha.localhost` (`en-US`), `beta.localhost` (`da-DK`) |
 | Launch countries and their domains | 07 | One dedicated domain per country; no language path prefixes | |
-| Affiliate marketplace per country | 03 | — | |
-| Legal page texts (privacy, imprint, about, affiliate disclosure) | 02 (placeholders), 07 (final) | Written or reviewed by you, not AI-generated | |
-| Affiliate network(s) + product feed/API access | 03 | — | |
-| Affiliate terms: image caching, price display, disclosure wording | 03 | — | |
-| Hero image provider | 03 | Flux via fal.ai | |
-| Semrush plan with API units | 05 | — | |
-| Human QC cadence | 06 | Review the next 48h of scheduled posts daily; re-check live posts weekly | |
+| Affiliate marketplace per country | 03 | — | Deferred with the network choice |
+| Legal page texts (privacy, imprint, about, affiliate disclosure) | 02 (placeholders), 07 (final) | Written or reviewed by you, not AI-generated | Placeholders in 02; real text written by Mathias before launch |
+| Affiliate network(s) + product feed/API access | 03 | — | **Deferred** — phase 03 uses the `mock` product source only |
+| Affiliate terms: image caching, price display, disclosure wording | 03 | — | Deferred with the network choice |
+| Hero image provider | 03 | Flux via fal.ai | **Deferred** — build without generated images; revisit before launch |
+| Semrush plan with API units | 05 | — | Not purchased yet — buy when phase 05 starts |
+| Human QC cadence | 06 | Review the next 48h of scheduled posts daily; re-check live posts weekly | Default accepted: next 48h of scheduled posts daily, live posts weekly |
 | Hosting platform + cron mechanism | 07 | Must allow crons every 1–5 minutes and long enough function durations | |
 | Production Supabase project + backup plan | 07 | Separate projects for staging and production | |
 | Admin hostname | 07 | `admin.<yourdomain>` | |

@@ -206,7 +206,7 @@ export interface Domain {
    */
   niche: number | Niche;
   /**
-   * The single language + country this domain publishes in. One of: en-GB, en-US, de-DE
+   * The single language + country this domain publishes in. One of: en-US, da-DK
    */
   locale: string;
   branding?: {
