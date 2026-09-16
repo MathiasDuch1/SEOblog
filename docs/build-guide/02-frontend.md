@@ -25,9 +25,10 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
 ## Steps
 
 1. **Write a seed script.** `src/scripts/seed.ts`, run with `npm run seed` (`payload run src/scripts/seed.ts`). It is idempotent — safe to run twice — and creates:
-   - Domain **Alpha**: `alpha.localhost`, `en-GB`, distinct branding colors.
-   - Domain **Beta**: `beta.localhost`, `de-DE`, different branding.
-   - Domain **Gamma**: `gamma.localhost`, `en-US`, different branding. Same language as Alpha, different country.
+   - Niche **Outdoor** (`outdoor`) for Alpha and Beta, and niche **Kitchen** (`kitchen`) for Gamma, so multi-niche grouping is exercised. Every domain requires a niche (phase 01).
+   - Domain **Alpha**: `alpha.localhost`, `en-GB`, Outdoor, distinct branding colors.
+   - Domain **Beta**: `beta.localhost`, `de-DE`, Outdoor, different branding. Same niche as Alpha, different country.
+   - Domain **Gamma**: `gamma.localhost`, `en-US`, Kitchen, different branding. Same language as Alpha, different country and niche.
    - For each domain, content written in that domain's language: 3 published listicles with 3–5 products (placeholder product images from an allowed remote host) and a featured image, 3 published informational posts with Lexical bodies (headings, paragraphs, an inline link) and a featured image, 1 draft, and 1 scheduled post.
    - One Alpha post and one Gamma post sharing the same slug, to prove domain isolation.
    Later phases add required fields; each of those steps updates this script.
@@ -134,7 +135,7 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
 
 ## Acceptance Checklist
 
-- [ ] **Step 1:** `npm run seed` is idempotent and creates three single-locale domains with content in their own language, draft/scheduled posts, and a slug shared across two domains
+- [ ] **Step 1:** `npm run seed` is idempotent and creates two niches and three single-locale domains (two sharing a niche) with content in their own language, draft/scheduled posts, and a slug shared across two domains
 - [ ] **Step 2:** `src/lib/cache/tags.ts` defines the tag contract, and revalidating one post's tag refreshes only that post
 - [ ] **Step 3:** `getDomainByHostname` resolves known hosts (ignoring port) and returns `null` for unknown ones
 - [ ] **Step 4:** `src/proxy.ts` rewrites public paths by hostname only (no locale segment) and does no database access

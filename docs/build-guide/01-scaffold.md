@@ -2,7 +2,8 @@
 
 ## Goal
 
-The Next.js + Payload app runs against a real Supabase Postgres database, and media uploads go to Cloudflare R2. The four spec collections (`domains`, `keyword-clusters`, `posts`, `media`) are modelled per spec §4:
+The Next.js + Payload app runs against a real Supabase Postgres database, and media uploads go to Cloudflare R2. The spec §4 collections (`niches`, `domains`, `keyword-clusters`, `posts`, `media`) are modelled per spec §4:
+- each domain belongs to exactly one niche, which is how content runs are grouped
 - each domain is one country with exactly one locale
 - posts belong to one domain and are **not** localized
 - slugs are unique per domain
@@ -57,13 +58,14 @@ The SEO plugin is on posts, public read is limited to published content, and the
    **Verify:** `grep -rn "localized" src/collections src/payload.config.ts` returns nothing, and the post edit screen has no locale switcher. The Supabase schema has no `*_locales` tables once the dev database is recreated or pushed. `vitest` isn't installed yet, so a short `payload run` script prints the three helper results for `de-DE` and is deleted afterwards.
 
 8. **Align the collections with spec §4.** Review the stubs in `src/collections/` and adjust:
-   - **Domains** — `name`, `hostname` (unique, lowercase), `locale` (required text, validated against `SUPPORTED_LOCALES`; a text field rather than a select, so adding a locale never requires a migration), and a `branding` group.
+   - **Niches** — `name`, `slug` (unique, lowercase), `description`. Logged-in users only; niches are internal and never shown to visitors.
+   - **Domains** — `name`, `hostname` (unique, lowercase), `niche` (required relationship, indexed — exactly one niche per domain), `locale` (required text, validated against `SUPPORTED_LOCALES`; a text field rather than a select, so adding a locale never requires a migration), and a `branding` group.
    - **KeywordClusters** — `source`, `clusterName`, `keywords[]`, `targetDomain`, `targetTemplate`, `status` (`unused` | `assigned` | `used`).
    - **Posts** — `domain` (required), `template`, `slug`, `status`, `scheduledAt`, `publishedAt`, `featuredImage`, `intro`, and `products[]` (`title`, `description`, `imageUrl`, `affiliateUrl`). `body` is Lexical rich text, plus `summary`. Nothing is localized.
    - Show `products` only for listicles and `body` only for informational posts.
    - Index `posts.domain`, `posts.slug`, `posts.status`, `posts.scheduledAt`, and `posts.publishedAt`. The frontend (phase 02) and the dispatcher (phase 04) query these on every request or cron run.
    - Validate that a post's `slug` is unique **per domain**: a `beforeValidate` hook queries for another post with the same domain and slug. The same slug on a different domain is allowed.
-   **Verify:** all four collections appear in the admin sidebar with the fields above. A domain with `locale: 'xx-XX'` is rejected. A listicle post shows `products` and hides `body`, and vice versa. Saving a second post with the same slug on the same domain is rejected, while the same slug on a different domain is accepted.
+   **Verify:** all five collections appear in the admin sidebar with the fields above. A domain with no `niche` is rejected, and a domain with `locale: 'xx-XX'` is rejected. A listicle post shows `products` and hides `body`, and vice versa. Saving a second post with the same slug on the same domain is rejected, while the same slug on a different domain is accepted.
 
 9. **Configure the SEO plugin and the URL helper.**
    - Create `src/lib/urls.ts`, which exports `siteOrigin(domain)` and `postUrl(domain, slug)` → `{scheme}://{hostname}{:port}/{slug}`, with no locale segment. These are the **only** way absolute public URLs are built in any phase: canonical, sitemap, IndexNow, and SEO `generateURL`. The scheme comes from `PUBLIC_URL_SCHEME` (`http` in dev, `https` in prod) and an optional `PUBLIC_URL_PORT` (`3000` in dev, empty in prod). Add both to `.env.example`.
@@ -98,19 +100,20 @@ The SEO plugin is on posts, public read is limited to published content, and the
 
 ## Acceptance Checklist
 
-- [ ] **Step 1:** Node 22 is active and Next.js 16, Tailwind v4, and Payload 3 are installed with no missing or invalid packages
-- [ ] **Step 2:** `npm run generate:importmap` succeeds
-- [ ] **Step 3:** `/` and `/admin` each render exactly one `<html>` element
-- [ ] **Step 4:** The app connects to the development Supabase project and Payload tables exist in the database
-- [ ] **Step 5:** An admin user can log in, `/api/users` is not publicly readable, and repeated failed logins lock the account
-- [ ] **Step 6:** Media uploads land in R2 and are served from `R2_PUBLIC_URL`
-- [ ] **Step 7:** Payload localization is removed (no `localized` fields, no locale tables), and `src/lib/locales.ts` defines supported locales and helpers
-- [ ] **Step 8:** `domains`, `keyword-clusters`, `posts`, `media` collections all appear in the admin sidebar with the spec §4 fields, and each domain has one validated `locale`
-- [ ] **Step 8:** Template-conditional fields work (`products` for listicle only, `body` for informational only)
-- [ ] **Step 8:** A duplicate slug on the same domain is rejected; the same slug on another domain is accepted
-- [ ] **Step 9:** `src/lib/urls.ts` builds locale-free public URLs from env-configured scheme/port, and the SEO tab auto-generates title/description/URL
-- [ ] **Step 10:** Anonymous `GET /api/posts` returns only published posts; `keyword-clusters` is not publicly readable
-- [ ] **Step 11:** `src/payload-types.ts` is generated, committed (not gitignored), and `tsc --noEmit` passes
-- [ ] **Step 12:** An initial migration exists and `migrate:status` runs
-- [ ] **Step 13:** `src/lib/payload.ts` is server-only and importing it from a client component fails the build
-- [ ] **Step 14:** `.env.example` documents every variable, and `npm run lint` and `npm run build` pass
+- [x] **Step 1:** Node 22 is active and Next.js 16, Tailwind v4, and Payload 3 are installed with no missing or invalid packages
+- [x] **Step 2:** `npm run generate:importmap` succeeds
+- [x] **Step 3:** `/` and `/admin` each render exactly one `<html>` element
+- [x] **Step 4:** The app connects to the development Supabase project and Payload tables exist in the database
+- [x] **Step 5:** An admin user can log in, `/api/users` is not publicly readable, and repeated failed logins lock the account
+- [x] **Step 6:** Media uploads land in R2 and are served from `R2_PUBLIC_URL`
+- [x] **Step 7:** Payload localization is removed (no `localized` fields, no locale tables), and `src/lib/locales.ts` defines supported locales and helpers
+- [x] **Step 8:** `niches`, `domains`, `keyword-clusters`, `posts`, `media` collections all appear in the admin sidebar with the spec §4 fields, and each domain has one validated `locale`
+- [x] **Step 8:** Every domain requires exactly one `niche`, and `niches` is not publicly readable
+- [x] **Step 8:** Template-conditional fields work (`products` for listicle only, `body` for informational only)
+- [x] **Step 8:** A duplicate slug on the same domain is rejected; the same slug on another domain is accepted
+- [x] **Step 9:** `src/lib/urls.ts` builds locale-free public URLs from env-configured scheme/port, and the SEO tab auto-generates title/description/URL
+- [x] **Step 10:** Anonymous `GET /api/posts` returns only published posts; `keyword-clusters` is not publicly readable
+- [x] **Step 11:** `src/payload-types.ts` is generated, committed (not gitignored), and `tsc --noEmit` passes
+- [x] **Step 12:** An initial migration exists and `migrate:status` runs
+- [x] **Step 13:** `src/lib/payload.ts` is server-only and importing it from a client component fails the build
+- [x] **Step 14:** `.env.example` documents every variable, and `npm run lint` and `npm run build` pass

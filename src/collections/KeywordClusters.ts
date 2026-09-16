@@ -6,6 +6,12 @@ export const KeywordClusters: CollectionConfig = {
     useAsTitle: 'clusterName',
     defaultColumns: ['clusterName', 'targetDomain', 'targetTemplate', 'status'],
   },
+  access: {
+    read: ({ req }) => Boolean(req.user),
+    create: ({ req }) => Boolean(req.user),
+    update: ({ req }) => Boolean(req.user),
+    delete: ({ req }) => Boolean(req.user),
+  },
   fields: [
     {
       name: 'source',

@@ -4,7 +4,7 @@
 
 Two purpose-built interfaces live inside the Payload admin (spec §5), on top of the phase 03–05 server functions:
 
-- **SEO interface** (`/admin/seo`): run Semrush research for a country domain, review and edit clusters, and submit bulk generation with a cost preview. Imported posts can be scheduled automatically. Batch status tracking lets you resubmit failed clusters.
+- **SEO interface** (`/admin/seo`): pick a niche, then run Semrush research for a country domain in it, review and edit clusters, and submit bulk generation with a cost preview. Imported posts can be scheduled automatically. Batch status tracking lets you resubmit failed clusters.
 - **Editor interface** (`/admin/editor`): filterable article list across domains with readiness status, rendered previews of unpublished posts, a scheduling calendar/timeline per domain, schedule/reschedule actions, and QC attention lists for upcoming **and** live posts (incomplete fields, missing images, broken affiliate links). Every post links into Payload's native edit screen.
 
 Every domain is one country with one language. Wherever the interfaces show a domain, they also show its locale (e.g. `example.de · de-DE`), so editors always know which market they are working on. Everything renders on the server. Client components are limited to the small interactive leaves listed below.
@@ -33,14 +33,15 @@ Every domain is one country with one language. Wherever the interfaces show a do
    - Run `npm run generate:importmap`.
    **Verify:** logged in, "SEO" and "Editor" nav links appear, and each view renders inside the normal admin chrome. Logged out, `localhost:3000/admin/seo` redirects to login and returns no view HTML.
 
-2. **Build the research panel in the SEO interface.** A form — a plain `<form action={serverAction}>`, no client JS required — with domain (shown with its locale and Semrush database), seed keywords (entered in that domain's language), and limit per report. It calls `runResearchAction` then `clusterKeywordsAction` from phase 05. Below it, list recent research runs for the selected domain (from `searchParams`): date, database, seeds, keyword count, units used, status, and a link to review that run's proposed clusters.
+2. **Build the research panel in the SEO interface.** A form — a plain `<form action={serverAction}>`, no client JS required — with a niche selector (`searchParams`) that narrows the domain list to that niche's domains, domain (shown with its locale and Semrush database), seed keywords (entered in that domain's language), and limit per report. It calls `runResearchAction` then `clusterKeywordsAction` from phase 05. Below it, list recent research runs for the selected domain (from `searchParams`): date, database, seeds, keyword count, units used, status, and a link to review that run's proposed clusters.
    **Verify:** submitting the form for Beta runs research against the `de` database and creates proposed clusters with German names, and the run shows in the list with units used. Re-submitting identical inputs reuses the stored run (no new units).
 
 3. **Build cluster review.** For a research run, show proposed clusters: name, primary keyword, keywords with volume/KD, suggested template, rationale, and any conflict reasons from `findConflicts`. The inline editor (allowed client leaf) renames a cluster, removes keywords, and overrides the target template, calling `updateClusterAction` / `saveClustersAction`. Conflicting clusters need an explicit "save anyway" choice. A saved-clusters tab lists the domain's `unused` / `assigned` / `used` clusters, filtered via `searchParams`.
    **Verify:** editing a cluster's name and template persists after a full page reload. A conflicting cluster can't be saved without the explicit override. The status filter shows the right counts.
 
 4. **Add bulk generation.**
-   - Scoped to one domain at a time (phase 03 batches are per domain). The domain and its locale are shown prominently above the form.
+   - Scoped to one domain at a time (phase 03 batches are per domain). The domain and its locale are shown prominently above the form, with its niche.
+   - Above the domain, a niche selector lists that niche's domains with their `unused` cluster counts, so a month of content can be worked through one niche at a time. Picking a domain there is still what submits a batch.
    - Select `unused` clusters with the allowed client checkbox leaf. The selection is submitted as form data, not held in global client state.
    - Option: **"Schedule automatically when ready"** stores `autoSchedule` on the batch.
    - A server-rendered cost preview shows request count (one per selected cluster) × estimated tokens per request × batch price, plus hero images × image price. Put per-model and per-image rates in `src/lib/ai/pricing.ts`, sourced from spec §8 and labelled "verify current pricing".
@@ -61,11 +62,11 @@ Every domain is one country with one language. Wherever the interfaces show a do
    **Verify:** a finished batch shows correct counts and cost, and "Import now" imports it so its posts appear in the Editor list (step 6). For a batch with a simulated failed request, "Resubmit failed clusters" creates a new batch containing only that cluster, and after import there is exactly one post for it. A stale poll timestamp shows the warning.
 
 6. **Build the Editor article list.** `/admin/editor` is a server-rendered table of posts across all domains.
-   - Filters (all `searchParams`, applied as a Payload `where` on the server): domain, template, status, readiness (ready / not ready), and scheduled date range.
+   - Filters (all `searchParams`, applied as a Payload `where` on the server): niche (matched through `domain.niche`), domain, template, status, readiness (ready / not ready), and scheduled date range.
    - Columns: title (`meta.title`), domain (with locale), template, status, `scheduledAt` in the domain's timezone, a readiness badge listing missing fields from `getReadiness`, a hero image indicator, and "Preview" (step 7) and "Edit" links.
    - "Edit" opens `/admin/collections/posts/{id}`, Payload's native edit screen (spec §5.2).
    - Pagination via `?page=`.
-   **Verify:** the domain + status filters return the same count as an equivalent REST query. The "not ready" filter shows only posts with missing fields, and the badge names them. "Edit" opens the native edit screen. Filters survive a page reload, since they're in the URL.
+   **Verify:** the niche filter shows only posts on that niche's domains, and the domain + status filters return the same count as an equivalent REST query. The "not ready" filter shows only posts with missing fields, and the badge names them. "Edit" opens the native edit screen. Filters survive a page reload, since they're in the URL.
 
 7. **Add draft preview.**
    - Route group `src/app/(preview)/preview/[postId]/page.tsx` with its own root layout (`<html lang={domain.locale}>`), the frontend `globals.css`, the post's domain branding, and that domain's UI dictionary. It's reachable only on the admin host (phase 02 proxy).
@@ -119,7 +120,7 @@ Every domain is one country with one language. Wherever the interfaces show a do
 - [ ] **Step 4:** Bulk generation is scoped to one domain, shows a text + image cost preview, submits one batch, and rejects double submission
 - [ ] **Step 4:** Batches with auto-schedule end with their ready posts scheduled into that domain's free slots
 - [ ] **Step 5:** Batch status shows counts, errors, and actual cost; "Import now" and "Resubmit failed clusters" work; a stale poller is flagged
-- [ ] **Step 6:** The Editor list filters server-side via URL params, shows domain + locale and readiness, and links into native editing
+- [ ] **Step 6:** The Editor list filters server-side via URL params, including by niche, shows domain + locale and readiness, and links into native editing
 - [ ] **Step 7:** Unpublished posts can be previewed with the real templates, branding, and language on the admin host only, including from the native edit screen
 - [ ] **Step 8:** The calendar shows each domain's posts at the correct local slot times, navigates by week without client JS, and flags a stale dispatcher
 - [ ] **Step 9:** Schedule drafts, reschedule (with per-domain collision and window checks), unschedule, and publish-now all work from the UI

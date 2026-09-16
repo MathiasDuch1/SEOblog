@@ -6,7 +6,7 @@ This guide turns [`docs/spec.md`](../spec.md) into seven phases that can each be
 
 | File | Phase | Builds | Depends on | External accounts needed |
 |---|---|---|---|---|
-| [01-scaffold.md](01-scaffold.md) | Scaffold & content model | Next.js + Payload running on Supabase (dev), R2 media, collections with one locale per domain, SEO plugin, URL helper, access control, migrations | — | Supabase, Cloudflare R2 |
+| [01-scaffold.md](01-scaffold.md) | Scaffold & content model | Next.js + Payload running on Supabase (dev), R2 media, collections with one niche and one locale per domain, SEO plugin, URL helper, access control, migrations | — | Supabase, Cloudflare R2 |
 | [02-frontend.md](02-frontend.md) | Public blog frontend | Hostname-based routing (one country domain = one language, no locale paths), admin-host lockdown, front page, both article templates, legal pages, metadata from the SEO plugin, JSON-LD, scalable sitemaps, robots | 01 | — |
 | [03-generation-pipeline.md](03-generation-pipeline.md) | Content generation | Claude Batch API pipeline in each domain's language, per-country affiliate product feed, import in resumable chunks, hero images, resubmitting failed clusters | 01, 02 | Anthropic API, affiliate network, image provider |
 | [04-scheduling.md](04-scheduling.md) | Scheduling & publishing | Jittered slot assignment, publish dispatcher, revalidation, slug-change redirects, IndexNow (dry run), local cron runner | 01–03 | — |
@@ -61,6 +61,7 @@ These are open items from spec §9. Each phase lists the decisions it needs unde
 |---|---|---|---|
 | Supabase development project + region | 01 | Region closest to your planned hosting | |
 | R2 bucket + public media domain (e.g. `media.<yourdomain>`) | 01 | One dev bucket; production gets its own in 07 | |
+| Niches at launch, and which domains belong to each | 01 | Start with one niche; add more as domains are added | |
 | Supported locales (language + country codes) | 01 | Start with the launch countries, e.g. `en-GB`, `en-US`, `de-DE` | |
 | Dev test domains | 02 | `alpha.localhost` (`en-GB`), `beta.localhost` (`de-DE`), `gamma.localhost` (`en-US`) — covers two languages, plus two countries sharing a language | |
 | Launch countries and their domains | 07 | One dedicated domain per country; no language path prefixes | |

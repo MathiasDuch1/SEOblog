@@ -1,18 +1,71 @@
 import type { CollectionConfig } from 'payload'
+import { ValidationError } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
   admin: {
-    useAsTitle: 'slug',
-    defaultColumns: ['slug', 'domain', 'template', 'status', 'scheduledAt'],
+    useAsTitle: 'title',
+    defaultColumns: ['title', 'domain', 'template', 'status', 'scheduledAt'],
+  },
+  access: {
+    read: ({ req }) => (req.user ? true : { status: { equals: 'published' } }),
+    create: ({ req }) => Boolean(req.user),
+    update: ({ req }) => Boolean(req.user),
+    delete: ({ req }) => Boolean(req.user),
+  },
+  hooks: {
+    beforeValidate: [
+      // Slugs are unique per domain; the same slug on another domain is allowed.
+      async ({ data, originalDoc, req }) => {
+        const domainValue = data?.domain ?? originalDoc?.domain
+        const domain = typeof domainValue === 'object' && domainValue !== null ? domainValue.id : domainValue
+        const slug = data?.slug ?? originalDoc?.slug
+        if (!domain || !slug) return data
+
+        const existing = await req.payload.find({
+          collection: 'posts',
+          where: {
+            and: [
+              { domain: { equals: domain } },
+              { slug: { equals: slug } },
+              ...(originalDoc?.id ? [{ id: { not_equals: originalDoc.id } }] : []),
+            ],
+          },
+          limit: 1,
+          depth: 0,
+          pagination: false,
+          overrideAccess: true,
+          req,
+        })
+
+        if (existing.docs.length > 0) {
+          throw new ValidationError({
+            collection: 'posts',
+            errors: [{ message: 'Another post on this domain already uses this slug', path: 'slug' }],
+            req,
+          })
+        }
+
+        return data
+      },
+    ],
   },
   fields: [
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+      admin: {
+        description: "The article headline (H1), in the domain's language",
+      },
+    },
     {
       name: 'domain',
       type: 'relationship',
       relationTo: 'domains',
       required: true,
+      index: true,
       admin: {
         description: 'Every post belongs to exactly one domain; it is never shared across domains',
       },
@@ -30,6 +83,7 @@ export const Posts: CollectionConfig = {
       name: 'slug',
       type: 'text',
       required: true,
+      index: true,
       admin: {
         description: 'URL segment, unique within the domain',
       },
@@ -38,6 +92,7 @@ export const Posts: CollectionConfig = {
       name: 'status',
       type: 'select',
       required: true,
+      index: true,
       defaultValue: 'draft',
       options: [
         { label: 'Draft', value: 'draft' },
@@ -49,6 +104,7 @@ export const Posts: CollectionConfig = {
     {
       name: 'scheduledAt',
       type: 'date',
+      index: true,
       admin: {
         date: {
           pickerAppearance: 'dayAndTime',
@@ -58,6 +114,7 @@ export const Posts: CollectionConfig = {
     {
       name: 'publishedAt',
       type: 'date',
+      index: true,
       admin: {
         date: {
           pickerAppearance: 'dayAndTime',

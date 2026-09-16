@@ -81,12 +81,13 @@ At production volume — a month of content for several country domains — impo
 
 7. **Assemble and submit a batch.** `src/lib/generation/submitBatch.ts` → `submitBatch({ clusterIds })`:
    - Load clusters. Reject any whose status isn't `unused`, and reject a mix of target domains (one batch per domain).
+   - A month of content is planned one niche at a time (spec §4): the caller selects a niche, and each of that niche's domains gets its own batch. `submitBatch` itself stays per domain; the niche is only how the caller groups the work. The niche comes from `domain.niche`, so nothing is stored on the batch.
    - Listicles: fetch products once per cluster from `getProductSource(domain)`, and store the list in `productSnapshot`.
    - One request per cluster, with `custom_id = c{clusterId}`. Params: `model: GENERATION_MODEL`, `max_tokens: 16000`, `thinking: { type: 'adaptive' }`, `output_config: { effort: GENERATION_EFFORT, format: … }`, and the system and user prompts from step 6.
    - If the request count exceeds the API limits (see "Key API facts"), split into several batches.
    - Create the `generation-batches` doc(s) and set the clusters to `assigned` **after** the API accepts the batch. If submission throws, nothing changes.
-   - Script: `npm run generate -- --clusters <id,id,...>` (`payload run src/scripts/generate.ts`).
-   **Verify:** with mock products, 3 Beta clusters (2 listicles, 1 informational) create one batch with 3 requests. The batch doc has 3 `pending` rows and a product snapshot, and all three clusters are `assigned`. Mixing an Alpha cluster into the same call is rejected, with nothing submitted.
+   - Script: `npm run generate -- --clusters <id,id,...>` (`payload run src/scripts/generate.ts`), plus `--niche <slug>`, which takes that niche's domains' `unused` clusters and submits one batch per domain.
+   **Verify:** with mock products, 3 Beta clusters (2 listicles, 1 informational) create one batch with 3 requests. The batch doc has 3 `pending` rows and a product snapshot, and all three clusters are `assigned`. Mixing an Alpha cluster into the same call is rejected, with nothing submitted. `--niche outdoor` creates one batch per Outdoor domain (Alpha and Beta) and none for the Kitchen domain.
 
 8. **Poll and import results in resumable chunks.** `src/lib/generation/importBatch.ts` → `importBatch(batchDocId, { maxRows = IMPORT_CHUNK_SIZE })`:
    - Retrieve the batch and update `status` / `requestCounts`. Stop if it hasn't `ended`.
@@ -143,6 +144,7 @@ At production volume — a month of content for several country domains — impo
 - [ ] **Step 5:** A real affiliate network source returns real products for a domain's country marketplace, rendered in line with the terms review
 - [ ] **Step 6:** System prompts are byte-identical across requests and domains with a cache breakpoint, and user messages carry the locale-specific writing instruction
 - [ ] **Step 7:** `npm run generate` submits one request per cluster for a single domain, snapshots products, and marks clusters `assigned` only after acceptance
+- [ ] **Step 7:** `npm run generate -- --niche <slug>` submits one batch per domain in that niche, and none for domains outside it
 - [ ] **Step 8:** Import creates one post per successful cluster in the domain's language, with products matching the snapshot
 - [ ] **Step 8:** Import runs in resumable chunks, is idempotent, records failures, and returns failed clusters to `unused`
 - [ ] **Step 8:** `/api/cron/generation` rejects requests without `CRON_SECRET`

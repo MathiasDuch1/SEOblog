@@ -21,6 +21,7 @@ The system supports **two article templates** at launch:
 
 ### Template A — Listicle
 ```
+Title (H1)
 Featured Image
 Intro (short SEO-optimized paragraph)
 Product 1
@@ -39,6 +40,7 @@ Summary
 ### Template B — Informational
 Classic informational/editorial content — a standard long-form article structure rather than repeating product blocks:
 ```
+Title (H1)
 Featured Image
 Intro
 Body sections (headings + paragraphs, may include inline affiliate links/CTAs where relevant)
@@ -69,8 +71,14 @@ Both templates map to structured content models (not free-form rich text where a
 
 ## 4. Data Model (conceptual)
 
+**Niche**
+- name, slug, description
+- A topic area a set of domains covers (e.g. Outdoor, Kitchen). Internal only — never shown to visitors
+- Content is planned and generated one niche at a time: a month of articles for every domain in the Outdoor niche, then a month for the next niche
+
 **Domain** (one per country)
 - name, hostname, branding/theme config
+- `niche` — required relationship to Niche; exactly one niche per domain
 - `locale` — the single language + country the domain publishes in (e.g. `de-DE`, `en-GB`, `da-DK`); drives the article language, `<html lang>`, UI strings, and Open Graph locale
 - Semrush regional database, affiliate marketplace settings, and publishing timezone for that country
 
@@ -80,6 +88,7 @@ Both templates map to structured content models (not free-form rich text where a
 
 **Post** (one document per article, belonging to exactly one domain)
 - `domain` — relationship to Domain (an article's identity is scoped to its domain; two domains never share a Post document, even if both covered the same topic or were generated in the same batch run)
+- `title` — the article headline (H1), required, written in the domain's language
 - `template`: `listicle` | `informational`
 - `slug` — unique within its domain; the URL is `https://<domain hostname>/<slug>`
 - `status`: `draft` | `scheduled` | `published` | `failed`
@@ -109,6 +118,7 @@ Used for keyword research and bulk content generation.
 - **Semrush integration**: pulls keyword data and generates keyword clusters via the Semrush API, scoped to a chosen domain/niche and using that domain's country database
 - **Cluster review**: displays generated keyword clusters, allows selecting/editing which clusters to use before generation
 - **Bulk generation**: takes a set of approved keyword clusters and generates a month's worth of articles — **one keyword cluster maps to exactly one article**
+- Work is organized by niche: pick a niche, and the interface scopes research, clusters, and generation to the domains in it
 - Lets the user choose, per cluster/article: target domain (which fixes the country and language) and template (listicle or informational)
 - Triggers the generation pipeline (see Section 6), submitting the batch to Claude's Batch API and creating `draft`/`scheduled` `Post` rows once results return
 
@@ -191,6 +201,7 @@ Roughly **$50–120/month** all-in for AI generation + images + database at 5 do
 ## 9. Open Items / Next Steps
 
 - Finalize which countries to launch in, and the domain for each (drives the cost/scale numbers above)
+- Define the niches at launch, and which domains belong to each
 - Choose specific affiliate network(s) per country and confirm product feed/API access for image + price data
 - Choose image generation provider (Flux via fal.ai is a good low-cost default)
 - Confirm Semrush API access/tier for keyword cluster generation
