@@ -10,7 +10,7 @@ At production volume — a month of content for several country domains — impo
 
 - Phases 01 and 02 fully checked off.
 - `ANTHROPIC_API_KEY` for an organization with Batch API access.
-- Decision recorded: **affiliate network and marketplace per country** (e.g. amazon.de for the German domain), with product feed/API credentials. The pipeline also ships a `mock` product source, so everything except the real-feed checklist item can be verified without one.
+- Decision recorded: **affiliate network and marketplace per country** (e.g. amazon.com for the US domain, or a Danish network's marketplace for the Danish domain), with product feed/API credentials. The pipeline also ships a `mock` product source, so everything except the real-feed checklist item can be verified without one.
 - **Affiliate terms review** (record findings in `00-overview.md`). Read each network's operating agreement for:
   - whether product images may be proxied or cached by `next/image`
   - whether prices may be displayed and how fresh they must be
@@ -50,16 +50,16 @@ At production volume — a month of content for several country domains — impo
    **Verify:** `generation-batches` appears in the admin sidebar and is denied to anonymous REST requests, a second post with the same `sourceCluster` is rejected, `tsc --noEmit` passes, and a new migration file exists.
 
 3. **Define output schemas.** `src/lib/ai/schemas.ts` contains zod schemas for one article's generated content:
-   - **Listicle:** `slug` (lowercase kebab-case ASCII, transliterating characters like `ä → ae` or `ß → ss`, written in the domain's language), `intro`, `products[]` (`productRef` echoing the input product id, `title`, `description`), `summary`, `meta` (`title` ≤ 60 chars, `description` ≤ 160 chars).
+   - **Listicle:** `slug` (lowercase kebab-case ASCII, transliterating characters like `æ → ae`, `ø → oe`, or `å → aa`, written in the domain's language), `intro`, `products[]` (`productRef` echoing the input product id, `title`, `description`), `summary`, `meta` (`title` ≤ 60 chars, `description` ≤ 160 chars).
    - **Informational:** `slug`, `intro`, `sections[]` (`heading`, `paragraphs[]`, optional `links[]` with `text` + `productRef`), `summary`, `meta`.
    Build the JSON schema for `output_config.format` from these zod schemas. Check with the `claude-api` skill whether the SDK's zod helper serializes correctly inside batch `params`; if not, pass `{ type: 'json_schema', schema }` built from `z.toJSONSchema`. On import, parse the text and validate with the **same** zod schema.
-   **Verify:** `vitest` tests pass for a valid fixture and fail with clear errors for an over-long `meta.title`, a missing product, and a slug containing `ü` or spaces.
+   **Verify:** `vitest` tests pass for a valid fixture and fail with clear errors for an over-long `meta.title`, a missing product, and a slug containing `ø` or spaces.
 
 4. **Convert sections to Lexical.** `src/lib/ai/toLexical.ts` converts `sections[]` into valid Lexical editor state JSON: `heading` nodes (h2), `paragraph` nodes, and link nodes for `links[]`. A `productRef` link resolves to that product's affiliate URL.
    **Verify:** a `vitest` test converts a fixture. Saving the result into an informational post's `body` through the Local API succeeds, and the phase 02 template renders it with correct headings and links.
 
 5. **Build the per-country affiliate product source.**
-   - Add an `affiliate` group to Domains: `source` (text, e.g. `mock` or the network name), `marketplace` (e.g. `amazon.de`), `partnerTag`. Update the seed script (Alpha, Beta, and Gamma use `mock`), regenerate types, and add a migration.
+   - Add an `affiliate` group to Domains: `source` (text, e.g. `mock` or the network name), `marketplace` (e.g. `amazon.com`), `partnerTag`. Update the seed script (Alpha, Beta, and Gamma use `mock`), regenerate types, and add a migration.
    - `src/lib/affiliate/types.ts` defines `ProductSource.findProducts({ keywords, domain, limit })`, which returns `{ id, title, imageUrl, affiliateUrl, price?, currency? }[]` for **that domain's marketplace**, with the partner tag applied.
    - Implementations: `mock.ts` (deterministic fake products whose URLs include the marketplace, with placeholder images on an allowed remote host) and `<network>.ts` (the chosen network, credentials from env).
    - `getProductSource(domain)` picks the implementation from `domain.affiliate.source`.
@@ -73,7 +73,7 @@ At production volume — a month of content for several country domains — impo
 6. **Write the prompt builders.** Put them in `src/lib/ai/prompts/{listicle,informational}.ts`.
    - The **system prompt** is byte-identical across every request of a template, with no language, dates, IDs, or per-request data, and ends with a `cache_control` breakpoint so the shared prefix is cached across the batch and across domains. It covers voice, SEO writing rules, the output shape, and grounding rules: describe only facts present in the supplied product data, and never invent specs, prices, or ratings.
    - The **user message** carries the per-request data:
-     - domain name, and the domain `locale` spelled out (e.g. "German for readers in Germany (de-DE)"), with the instruction to write natively for that market — spelling (en-GB vs en-US), units, and cultural references — not as a translation
+     - domain name, and the domain `locale` spelled out (e.g. "Danish for readers in Denmark (da-DK)"), with the instruction to write natively for that market — spelling (e.g. US English for en-US), units (metric in Denmark, imperial in the US), and cultural references — not as a translation
      - primary keyword + supporting keywords
      - the template's target length
      - for listicles, the product list with `productRef` ids
@@ -87,7 +87,7 @@ At production volume — a month of content for several country domains — impo
    - If the request count exceeds the API limits (see "Key API facts"), split into several batches.
    - Create the `generation-batches` doc(s) and set the clusters to `assigned` **after** the API accepts the batch. If submission throws, nothing changes.
    - Script: `npm run generate -- --clusters <id,id,...>` (`payload run src/scripts/generate.ts`), plus `--niche <slug>`, which takes that niche's domains' `unused` clusters and submits one batch per domain.
-   **Verify:** with mock products, 3 Beta clusters (2 listicles, 1 informational) create one batch with 3 requests. The batch doc has 3 `pending` rows and a product snapshot, and all three clusters are `assigned`. Mixing an Alpha cluster into the same call is rejected, with nothing submitted. `--niche outdoor` creates one batch per Outdoor domain (Alpha and Beta) and none for the Kitchen domain.
+   **Verify:** with mock products, 3 Beta clusters (2 listicles, 1 informational) create one batch with 3 requests. The batch doc has 3 `pending` rows and a product snapshot, and all three clusters are `assigned`. Mixing an Alpha cluster into the same call is rejected, with nothing submitted. `--niche spirituality` creates one batch per Spirituality domain (Alpha and Beta) and none for the Wellness domain (Gamma).
 
 8. **Poll and import results in resumable chunks.** `src/lib/generation/importBatch.ts` → `importBatch(batchDocId, { maxRows = IMPORT_CHUNK_SIZE })`:
    - Retrieve the batch and update `status` / `requestCounts`. Stop if it hasn't `ended`.
@@ -102,7 +102,7 @@ At production volume — a month of content for several country domains — impo
    - Add `CRON_SECRET` and `IMPORT_CHUNK_SIZE` (default 50) to `.env.example`.
    - The route is reachable only on the admin host (phase 02 proxy). Scheduling it is phase 07.
    **Verify:**
-   - After the step 7 batch ends, `generation:poll` creates 3 Beta draft posts in German.
+   - After the step 7 batch ends, `generation:poll` creates 3 Beta draft posts in Danish.
    - Listicle product order, image URLs, and affiliate URLs match the snapshot.
    - With `IMPORT_CHUNK_SIZE=1`, three calls to the cron route are needed to finish, and no row is imported twice.
    - A further `generation:poll` changes nothing.
@@ -116,16 +116,16 @@ At production volume — a month of content for several country domains — impo
    - A provider failure on one post is logged, and that post is retried on the next run, capped at 3 attempts (tracked in a `heroImageAttempts` field). It never fails the batch or changes post status.
    - Image generation is **not** done inline during import, so a large import can't time out waiting on the image API.
    - Add `IMAGE_PROVIDER` and `IMAGE_CHUNK_SIZE` (default 10) to `.env.example`.
-   **Verify:** with the real provider, an imported Beta post gets a `featuredImage` stored in R2, with German alt text, that renders on the phase 02 article page. Re-running doesn't create a second media doc. With `IMAGE_CHUNK_SIZE=1` and 3 imageless posts, three runs attach all three. A forced provider error stops retrying after 3 attempts. With `IMAGE_PROVIDER=mock`, the flow works offline.
+   **Verify:** with the real provider, an imported Beta post gets a `featuredImage` stored in R2, with Danish alt text, that renders on the phase 02 article page. Re-running doesn't create a second media doc. With `IMAGE_CHUNK_SIZE=1` and 3 imageless posts, three runs attach all three. A forced provider error stops retrying after 3 attempts. With `IMAGE_PROVIDER=mock`, the flow works offline.
 
 10. **Resubmit failed clusters.** Clusters that come back `unused` after a failed request go through `submitBatch` again like any other cluster. `submitBatch` re-fetches products (a fresh snapshot) and, because posts are only created on success, no stale or partial post exists to clean up. Add a `--failed-from <batchDocId>` option to `npm run generate`, which collects that batch's errored clusters.
     **Verify:** after the forced failure from step 8, `npm run generate -- --failed-from <batchDocId>` submits exactly one request, and once imported, the cluster becomes `used` with a single post (no duplicates for that `sourceCluster`).
 
-11. **Validate readiness.** `src/lib/generation/readiness.ts` → `getReadiness(post)` returns `{ ready, missing[] }`, checking `slug`, `intro`, `summary`, `meta.title`, `meta.description`, `featuredImage`, and either every product's `title` + `affiliateUrl` + `imageUrl` (listicle) or a non-empty `body` (informational). Phases 04 and 06 use this.
-    **Verify:** `vitest` tests cover a complete listicle, a complete informational post, a post missing `featuredImage`, and a listicle missing one product's `affiliateUrl`, each with the correct `missing` list.
+11. **Validate readiness.** `src/lib/generation/readiness.ts` → `getReadiness(post)` returns `{ ready, missing[] }`, checking `slug`, `intro`, `summary`, `meta.title`, `meta.description`, and either every product's `title` + `affiliateUrl` + `imageUrl` (listicle) or a non-empty `body` (informational). Phases 04 and 06 use this. `featuredImage` is deliberately not checked, since hero images are deferred.
+    **Verify:** `vitest` tests cover a complete listicle, a complete informational post, a post with no `featuredImage` that is still `ready`, and a listicle missing one product's `affiliateUrl`, each with the correct `missing` list.
 
-12. **Run an end-to-end dry run with the real API.** Use hand-made clusters on two domains in separate batches — 1 listicle + 1 informational on Beta (`de-DE`), and 1 listicle on Alpha (`en-GB`) — with the real Anthropic API. Use the real affiliate source if available, otherwise mock. Run it through `generate` → wait → `generation:poll`.
-    **Verify:** all three posts render correctly on their domains after temporarily setting them to `published`, then setting them back to `draft`. The Beta posts read as native German, and the Alpha post uses British spelling. Listicle products match each domain's feed data. Report the total input and output tokens and the computed cost at batch pricing against spec §8's ~$0.012 per post estimate.
+12. **Run an end-to-end dry run with the real API.** Use hand-made clusters on two domains in separate batches — 1 listicle + 1 informational on Beta (`da-DK`), and 1 listicle on Alpha (`en-US`) — with the real Anthropic API. Use the real affiliate source if available, otherwise mock. Run it through `generate` → wait → `generation:poll`.
+    **Verify:** all three posts render correctly on their domains after temporarily setting them to `published`, then setting them back to `draft`. The Beta posts read as native Danish, and the Alpha post uses US spelling and units. Listicle products match each domain's feed data. Report the total input and output tokens and the computed cost at batch pricing against spec §8's ~$0.012 per post estimate.
 
 ## Out of scope
 

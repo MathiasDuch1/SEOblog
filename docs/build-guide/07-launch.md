@@ -73,7 +73,7 @@ The phase ends with the first post on a real domain published automatically, end
 6. **Connect real country domains.**
    - One dedicated domain per launch country (e.g. `example.de`, `example.co.uk`). For each: add it to the hosting project (automatic TLS), create the DNS records, and add `www.<domain>` with a permanent redirect to the apex (or the reverse, but consistently) at the hosting/DNS level.
    - Create the `Domain` document in production with the real hostname, `locale`, timezone, schedule, Semrush database, and affiliate marketplace settings for that country.
-   - Replace the legal page placeholders with the final texts, written in that domain's language and meeting that country's legal requirements (e.g. an Impressum for Germany).
+   - Replace the legal page placeholders with the final texts, written in that domain's language and meeting that country's legal requirements (e.g. Danish privacy and cookie rules for the Danish domain).
    **Verify:** `curl -I http://<domain>` redirects to `https://<domain>`, and `curl -I https://www.<domain>` returns a permanent redirect to `https://<domain>`. The site renders with the correct branding and `<html lang>`, UI strings are in the domain's language, `sitemap.xml` URLs are absolute `https://<domain>/…` with no language prefixes, and the legal pages show the final text.
 
 7. **Wire the hosted crons.** Configure the platform to call `GET https://<admindomain>/api/cron/publish` every 1–5 minutes and `GET https://<admindomain>/api/cron/generation` every 10–15 minutes, both with `Authorization: Bearer ${CRON_SECRET}`. Commit the cron config file, or document the external cron setup in `README.md` under "Deployment". Use separate `CRON_SECRET`s for staging and production.

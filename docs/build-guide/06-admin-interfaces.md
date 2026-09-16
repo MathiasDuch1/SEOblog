@@ -7,11 +7,11 @@ Two purpose-built interfaces live inside the Payload admin (spec §5), on top of
 - **SEO interface** (`/admin/seo`): pick a niche, then run Semrush research for a country domain in it, review and edit clusters, and submit bulk generation with a cost preview. Imported posts can be scheduled automatically. Batch status tracking lets you resubmit failed clusters.
 - **Editor interface** (`/admin/editor`): filterable article list across domains with readiness status, rendered previews of unpublished posts, a scheduling calendar/timeline per domain, schedule/reschedule actions, and QC attention lists for upcoming **and** live posts (incomplete fields, missing images, broken affiliate links). Every post links into Payload's native edit screen.
 
-Every domain is one country with one language. Wherever the interfaces show a domain, they also show its locale (e.g. `example.de · de-DE`), so editors always know which market they are working on. Everything renders on the server. Client components are limited to the small interactive leaves listed below.
+Every domain is one country with one language. Wherever the interfaces show a domain, they also show its locale (e.g. `example.dk · da-DK`), so editors always know which market they are working on. Everything renders on the server. Client components are limited to the small interactive leaves listed below.
 
 ## Prerequisites
 
-- Phases 01–05 fully checked off.
+- Phases 01–05 checked off, except phase 03's deferred items (step 5's real affiliate feed and step 9's hero images).
 - `npm run generate:importmap` works (phase 01 step 2). Custom admin components only load after the import map is regenerated.
 - Decision recorded: human QC cadence (`00-overview.md`).
 - All admin URLs below are on `ADMIN_HOSTNAME` (`localhost:3000` in dev).
@@ -34,7 +34,7 @@ Every domain is one country with one language. Wherever the interfaces show a do
    **Verify:** logged in, "SEO" and "Editor" nav links appear, and each view renders inside the normal admin chrome. Logged out, `localhost:3000/admin/seo` redirects to login and returns no view HTML.
 
 2. **Build the research panel in the SEO interface.** A form — a plain `<form action={serverAction}>`, no client JS required — with a niche selector (`searchParams`) that narrows the domain list to that niche's domains, domain (shown with its locale and Semrush database), seed keywords (entered in that domain's language), and limit per report. It calls `runResearchAction` then `clusterKeywordsAction` from phase 05. Below it, list recent research runs for the selected domain (from `searchParams`): date, database, seeds, keyword count, units used, status, and a link to review that run's proposed clusters.
-   **Verify:** submitting the form for Beta runs research against the `de` database and creates proposed clusters with German names, and the run shows in the list with units used. Re-submitting identical inputs reuses the stored run (no new units).
+   **Verify:** submitting the form for Beta runs research against the `dk` database and creates proposed clusters with Danish names, and the run shows in the list with units used. Re-submitting identical inputs reuses the stored run (no new units).
 
 3. **Build cluster review.** For a research run, show proposed clusters: name, primary keyword, keywords with volume/KD, suggested template, rationale, and any conflict reasons from `findConflicts`. The inline editor (allowed client leaf) renames a cluster, removes keywords, and overrides the target template, calling `updateClusterAction` / `saveClustersAction`. Conflicting clusters need an explicit "save anyway" choice. A saved-clusters tab lists the domain's `unused` / `assigned` / `used` clusters, filtered via `searchParams`.
    **Verify:** editing a cluster's name and template persists after a full page reload. A conflicting cluster can't be saved without the explicit override. The status filter shows the right counts.
@@ -47,7 +47,7 @@ Every domain is one country with one language. Wherever the interfaces show a do
    - A server-rendered cost preview shows request count (one per selected cluster) × estimated tokens per request × batch price, plus hero images × image price. Put per-model and per-image rates in `src/lib/ai/pricing.ts`, sourced from spec §8 and labelled "verify current pricing".
    - A confirm step, then a Server Action calls phase 03's `submitBatch`.
    - Guard against double submission: the action rejects clusters that are no longer `unused`.
-   - Extend the phase 03 generation cron: after a batch with `autoSchedule` is fully imported and its posts have hero images, call phase 04's `scheduleDrafts({ domainId, startDate: tomorrow, days: 30, postIds })` with that batch's ready posts, and store the report on the batch. This covers spec §5.1's "draft/scheduled" on import.
+   - Extend the phase 03 generation cron: after a batch with `autoSchedule` is fully imported, call phase 04's `scheduleDrafts({ domainId, startDate: tomorrow, days: 30, postIds })` with that batch's ready posts, and store the report on the batch. This covers spec §5.1's "draft/scheduled" on import.
    **Verify:**
    - Selecting 3 Beta clusters shows 3 requests with text and image cost estimates.
    - Submitting creates one `generation-batches` doc for Beta with the clusters `assigned`.
@@ -74,14 +74,14 @@ Every domain is one country with one language. Wherever the interfaces show a do
    - It loads the post in any status with `overrideAccess: false` for the user, then renders the phase 02 `ListicleTemplate` / `InformationalTemplate` unchanged.
    - It shows a fixed "Preview — {domain} — {status} — scheduled {time}" banner, `robots: noindex`, and no caching.
    - Set `admin.preview` on the Posts collection so the native edit screen has a Preview button.
-   **Verify:** a `draft` Beta post renders at `/preview/{id}` exactly like the public template, with German UI strings and Beta's branding, when logged in. Logged out, it returns 404. On a blog hostname, `/preview/...` returns 404. The edit screen's Preview button opens it.
+   **Verify:** a `draft` Beta post renders at `/preview/{id}` exactly like the public template, with Danish UI strings and Beta's branding, when logged in. Logged out, it returns 404. On a blog hostname, `/preview/...` returns 404. The edit screen's Preview button opens it.
 
 8. **Build the scheduling calendar.** `/admin/editor/calendar?domain=&week=`:
    - Server-rendered week grid in the domain's timezone, with the domain and locale in the header. Each day shows its computed slots (phase 04 `computeDailySlots` without jitter as the grid rows), with `scheduled` / `published` / `failed` posts placed at their actual times.
    - Posts are colour-coded by status, with an attention icon when not ready or QC issues exist.
    - Previous/next week are plain links. Each post links to its preview and edit screen.
    - The header shows `scheduler-status.lastPublishRunAt`, with a warning if it's older than 15 minutes.
-   **Verify:** Beta's calendar for a seeded week shows each scheduled post on the correct Berlin-local day and time, and matches the list view's filtered count for that week. Switching to Gamma shows New York-local times. Week navigation works without client JS.
+   **Verify:** Beta's calendar for a seeded week shows each scheduled post on the correct Copenhagen-local day and time, and matches the list view's filtered count for that week. Switching to Alpha shows New York-local times. Week navigation works without client JS.
 
 9. **Add schedule management actions.**
    - "Schedule drafts" form: domain, start date, days → phase 04 `scheduleDrafts`, showing its report (filled, empty slots, skipped drafts with reasons).
@@ -99,7 +99,7 @@ Every domain is one country with one language. Wherever the interfaces show a do
       - published posts whose `qc.checkedAt` is older than 7 days (or the QC cadence recorded in `00-overview.md`), oldest first
     **Verify:** a scheduled post with a deliberately broken affiliate URL appears in the 48h panel with that URL listed. Fixing the URL in the native edit screen and clicking "Re-check links" removes it. A published post with a broken image URL appears under "Live issues" after the cron's periodic check. A post with an empty `summary` appears with the reason.
 
-11. **Verify edit isolation end to end (spec §5.2).** Using the native edit screen reached from the Editor list, change one product's title and affiliate URL on the published Alpha (`en-GB`) post that shares its slug with a Gamma (`en-US`) post (phase 02 seed).
+11. **Verify edit isolation end to end (spec §5.2).** Using the native edit screen reached from the Editor list, change one product's title and affiliate URL on the published Alpha (`en-US`) post that shares its slug (`best-meditation-cushions`) with a Gamma (`en-US`) post (phase 02 seed).
     **Verify:** the Alpha page shows the new title and link immediately. The Gamma post with the same slug is unchanged in every field, both on its page and in the REST API.
 
 12. **Audit server-first and build.** List every `'use client'` file under `src/`. It must match only the allowed leaves above. Confirm none of them import from `src/lib/` modules marked `server-only`, and that none receive full Payload documents as props.

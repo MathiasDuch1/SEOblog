@@ -6,7 +6,7 @@ Ready drafts get jittered publish slots — by default 10 per day per domain acr
 
 ## Prerequisites
 
-- Phases 01–03 fully checked off.
+- Phases 01–03 checked off, except phase 03's deferred items (step 5's real affiliate feed and step 9's hero images).
 - `CRON_SECRET` set (phase 03).
 
 ## Skills in play
@@ -27,10 +27,10 @@ Read these bundled Next.js 16 docs before steps 5–7. `revalidateTag` now takes
 ## Steps
 
 1. **Add scheduling settings to Domains.**
-   - `timezone` — IANA name (e.g. `Europe/Berlin` for a German domain), required with no default so each country's timezone is set deliberately, validated with `Intl.supportedValuesOf('timeZone')`.
+   - `timezone` — IANA name (e.g. `Europe/Copenhagen` for a Danish domain), required with no default so each country's timezone is set deliberately, validated with `Intl.supportedValuesOf('timeZone')`.
    - `schedule` group: `postsPerDay` (default 10), `windowStart` (default `08:00`), `windowEnd` (default `23:30`), `jitterMinutes` (default 8, allowed 5–10).
    - `indexNowKey` — 32 hex chars, generated in a `beforeChange` hook on create, admin read-only.
-   Regenerate types, add a migration, and update the seed script: Alpha `Europe/London`, Beta `Europe/Berlin`, Gamma `America/New_York`.
+   Regenerate types, add a migration, and update the seed script: Alpha `America/New_York`, Beta `Europe/Copenhagen`, Gamma `America/Los_Angeles` (Alpha and Gamma share a country and locale, so different US timezones keep their calendars distinguishable).
    **Verify:** a new domain gets a valid `indexNowKey` and the defaults above, an invalid timezone is rejected on save, and a migration file exists.
 
 2. **Write the slot algorithm.** `src/lib/scheduling/slots.ts` exports a pure function `computeDailySlots({ date, timezone, postsPerDay, windowStart, windowEnd, jitterMinutes, random })`, which returns UTC `Date`s:
@@ -42,8 +42,8 @@ Read these bundled Next.js 16 docs before steps 5–7. `revalidateTag` now takes
    - defaults → 10 slots, all within 08:00–23:30 local, strictly increasing
    - two different seeds → different slot times
    - no slot is exactly on the un-jittered base time for a seeded run
-   - EU and US spring-forward and fall-back dates (`Europe/Berlin` and `America/New_York`) → first slot ≥ 08:00 local and last ≤ 23:30 local
-   - the same date in `Europe/London` and `America/New_York` → different UTC slot times
+   - EU and US spring-forward and fall-back dates (`Europe/Copenhagen` and `America/New_York`) → first slot ≥ 08:00 local and last ≤ 23:30 local
+   - the same date in `Europe/Copenhagen` and `America/New_York` → different UTC slot times
    - `postsPerDay: 1` doesn't divide by zero
 
 3. **Enforce readiness.** A `beforeChange` hook on Posts blocks setting `status` to `scheduled` or `published` unless `getReadiness` (phase 03) reports `ready`. It throws a validation error listing the missing fields. Setting `scheduled` also requires `scheduledAt`. Setting `published` without `publishedAt` fills it with now. Update the seed script so every seeded published or scheduled post satisfies readiness.
@@ -54,7 +54,7 @@ Read these bundled Next.js 16 docs before steps 5–7. `revalidateTag` now takes
    - Fill free slots with that domain's ready drafts, oldest `createdAt` first, restricted to `postIds` when given, setting `scheduledAt` + `status: scheduled`.
    - Return a report: slots filled, slots left empty, and drafts skipped as not ready (with reasons).
    - Script: `npm run schedule -- --domain <id> --start 2026-10-01 --days 30`.
-   **Verify:** with 25 ready drafts on Beta, `--days 3` schedules exactly 25 posts across 3 days, with at most 10 per Berlin-local day, each within the window. A second run schedules nothing new. A not-ready draft shows in the skipped list. Passing `postIds` schedules only those posts. Scheduling Beta leaves Alpha's and Gamma's calendars untouched.
+   **Verify:** with 25 ready drafts on Beta, `--days 3` schedules exactly 25 posts across 3 days, with at most 10 per Copenhagen-local day, each within the window. A second run schedules nothing new. A not-ready draft shows in the skipped list. Passing `postIds` schedules only those posts. Scheduling Beta leaves Alpha's and Gamma's calendars untouched.
 
 5. **Add a revalidation helper.** `src/lib/cache/revalidate.ts` exports `revalidatePostChange(post, previous?)` and `revalidatePageChange(page, previous?)`. They revalidate the document tag, `postList(domainId)`, and `sitemap(domainId)`, using the phase 02 tag builders. If the domain or slug changed, they also revalidate the previous values. Pick the `revalidateTag` profile (and add `revalidatePath` for new URLs if needed) based on the docs read above. The requirement is that a newly published URL returns 200 with current content on its **first** request after publishing, not a stale 404.
    **Verify:** in production mode (`npm run build && npm start`), a post URL that 404s while scheduled returns 200 on the very first request after the dispatcher publishes it (checked in step 8).

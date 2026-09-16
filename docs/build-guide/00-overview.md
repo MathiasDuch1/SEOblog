@@ -69,7 +69,7 @@ These are open items from spec §9. Each phase lists the decisions it needs unde
 | Legal page texts (privacy, imprint, about, affiliate disclosure) | 02 (placeholders), 07 (final) | Written or reviewed by you, not AI-generated | Placeholders in 02; real text written by Mathias before launch |
 | Affiliate network(s) + product feed/API access | 03 | — | **Deferred** — phase 03 uses the `mock` product source only |
 | Affiliate terms: image caching, price display, disclosure wording | 03 | — | Deferred with the network choice |
-| Hero image provider | 03 | Flux via fal.ai | **Deferred** — no generated hero images. Phase 02 seeds placeholder featured images and templates render without one; phase 03 step 9 stays unbuilt. Revisit before launch |
+| Hero image provider | 03 | Flux via fal.ai | **Deferred** — no generated hero images. Phase 02 seeds placeholder featured images and templates render without one; phase 03 step 9 stays unbuilt. `featuredImage` is not part of `getReadiness`, so posts can be scheduled and published without one. Revisit before launch |
 | Semrush plan with API units | 05 | — | Not purchased yet — buy when phase 05 starts |
 | Human QC cadence | 06 | Review the next 48h of scheduled posts daily; re-check live posts weekly | Default accepted: next 48h of scheduled posts daily, live posts weekly |
 | Hosting platform + cron mechanism | 07 | Must allow crons every 1–5 minutes and long enough function durations | |

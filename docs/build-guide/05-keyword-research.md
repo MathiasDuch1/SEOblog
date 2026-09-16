@@ -6,7 +6,7 @@ Keyword clusters are created from Semrush data instead of by hand. A research ru
 
 ## Prerequisites
 
-- Phases 01 and 03 fully checked off. Clustering uses the phase 03 Anthropic client.
+- Phases 01 and 03 checked off, except phase 03's deferred items (step 5's real affiliate feed and step 9's hero images). Clustering uses the phase 03 Anthropic client.
 - Decision recorded: **Semrush plan with API access and purchased API units**. Every call consumes units, so development uses small `display_limit` values.
 - `SEMRUSH_API_KEY` available.
 
@@ -18,8 +18,8 @@ Keyword clusters are created from Semrush data instead of by hand. A research ru
 
 ## Steps
 
-1. **Link each domain to its Semrush database.** Add `semrushDatabase` (required text) to Domains: the Semrush regional database code for that domain's country (e.g. `uk`, `de`, `us` — confirm the exact codes against the Semrush docs). A `beforeValidate` hook warns if the database obviously mismatches the domain's `locale` country, using a small mapping in `src/lib/semrush/databases.ts`. Update the seed script (Alpha `uk`, Beta `de`, Gamma `us`), regenerate types, and add a migration.
-   **Verify:** saving Beta with `semrushDatabase: 'de'` succeeds, saving Beta with an empty value fails, and a migration exists.
+1. **Link each domain to its Semrush database.** Add `semrushDatabase` (required text) to Domains: the Semrush regional database code for that domain's country (e.g. `us`, `dk` — confirm the exact codes against the Semrush docs). A `beforeValidate` hook warns if the database obviously mismatches the domain's `locale` country, using a small mapping in `src/lib/semrush/databases.ts`. Update the seed script (Alpha `us`, Beta `dk`, Gamma `us`), regenerate types, and add a migration.
+   **Verify:** saving Beta with `semrushDatabase: 'dk'` succeeds, saving Beta with an empty value fails, and a migration exists.
 
 2. **Build the Semrush client.** `src/lib/semrush/client.ts` (server-only):
    - A thin wrapper over the Semrush Analytics API. **Before implementing, confirm the exact report types, parameters, and export columns against the current Semrush API docs.** The expected reports are keyword overview (`phrase_this`), related keywords (`phrase_related`), broad match (`phrase_fullsearch`), questions (`phrase_questions`), and keyword difficulty (`phrase_kdi`).
@@ -43,7 +43,7 @@ Keyword clusters are created from Semrush data instead of by hand. A research ru
    **Verify:** a `vitest` test of the post-validation rules with a fixture model output that has an invented keyword and a duplicate assignment. A live run over a real research run returns clusters where every keyword came from the run and no keyword appears twice.
 
 5. **Detect cannibalization.** `src/lib/keywords/dedupe.ts` → `findConflicts(domainId, clusters)`. It flags a proposed cluster whose normalized primary keyword matches, or whose keyword set overlaps ≥ 50% with, an existing `keyword-clusters` doc for the same domain in any status, or a post's `meta.title` keyword. Normalization is lowercase, trimmed, with stop-words removed, using a stop-word list for the domain's language. Singularization is English-only and skipped for other languages. Other domains are ignored — separate country domains are allowed to target the same topic (spec §4).
-   **Verify:** `vitest` tests: "best hiking backpacks" conflicts with an existing "best hiking backpack" cluster on Alpha (`en-GB`), the same cluster on Gamma (`en-US`) doesn't conflict, "beste wanderrucksäcke" conflicts with an existing "die beste wanderrucksäcke" cluster on Beta (`de-DE`), and a 60% keyword overlap is flagged.
+   **Verify:** `vitest` tests: "best tarot decks" conflicts with an existing "best tarot deck" cluster on Alpha (`en-US`), the same cluster on Gamma (`en-US`, another domain) doesn't conflict, "bedste tarotkort" conflicts with an existing "de bedste tarotkort" cluster on Beta (`da-DK`), and a 60% keyword overlap is flagged.
 
 6. **Extend and persist KeywordClusters.** Add `primaryKeyword`, `suggestedTemplate`, `researchRun` (relationship), and per-keyword `searchVolume`, `keywordDifficulty`, `cpc`, `intent`. `targetTemplate` defaults to `suggestedTemplate` but stays editable. `src/lib/keywords/saveClusters.ts` → `saveClusters({ runId, clusters, targetDomainId })` creates `unused` clusters and refuses any that `findConflicts` flags, unless `allowConflict: true` is passed per cluster. Regenerate types and add a migration.
    **Verify:** saving the step 4 output creates `unused` clusters linked to the run with metrics filled and `targetDomain` set to the run's domain, a conflicting cluster is refused with a reason, and a migration exists.
@@ -54,8 +54,8 @@ Keyword clusters are created from Semrush data instead of by hand. A research ru
    - returns serializable results only (no Payload docs with internal fields).
    **Verify:** a script-level or `vitest` test calls each action's inner function with and without a user: unauthenticated calls throw, invalid input throws a zod error, and valid calls succeed. `updateClusterAction` on an `assigned` cluster is refused.
 
-8. **Run an end-to-end research flow.** Script `npm run research -- --domain <betaId> --seeds "wanderrucksack" --limit 20`: research against Beta's `de` database → cluster → conflicts → save. Then generate one of the resulting clusters through phase 03's `npm run generate`.
-   **Verify:** the script saves real German-language clusters for Beta from live Semrush data and reports units used. One saved cluster successfully produces a German draft post on Beta through phase 03's pipeline. If Semrush access isn't available, say so and leave the box unchecked.
+8. **Run an end-to-end research flow.** Script `npm run research -- --domain <betaId> --seeds "tarotkort" --limit 20`: research against Beta's `dk` database → cluster → conflicts → save. Then generate one of the resulting clusters through phase 03's `npm run generate`.
+   **Verify:** the script saves real Danish-language clusters for Beta from live Semrush data and reports units used. One saved cluster successfully produces a Danish draft post on Beta through phase 03's pipeline. If Semrush access isn't available, say so and leave the box unchecked.
 
 ## Out of scope
 
