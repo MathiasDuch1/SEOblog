@@ -2,19 +2,19 @@
 
 ## Goal
 
-One Next.js app serves every country domain in the `domains` collection. Each domain publishes in its single locale, and URLs have **no language prefix** (`https://example.de/best-tents`). Each site has a front page, header menu, footer, legal pages, and both article templates (listicle and informational), all rendered as Server Components in the domain's language. Metadata comes from the Payload SEO plugin, with JSON-LD, a per-domain `sitemap.xml` that scales past 50k URLs, and `robots.txt`. The Payload admin and API are only reachable on a dedicated admin hostname, and non-production environments are never indexable. Every cached read carries tags from a fixed tag contract, so phase 04 can revalidate precisely.
+One Next.js app serves every country domain in the `domains` collection. Each domain publishes in its single locale, and URLs have **no language prefix** (`https://example.dk/bedste-meditationspuder`). Each site has a front page, header menu, footer, legal pages, and both article templates (listicle and informational), all rendered as Server Components in the domain's language. Metadata comes from the Payload SEO plugin, with JSON-LD, a per-domain `sitemap.xml` that scales past 50k URLs, and `robots.txt`. The Payload admin and API are only reachable on a dedicated admin hostname, and non-production environments are never indexable. Every cached read carries tags from a fixed tag contract, so phase 04 can revalidate precisely.
 
 ## Prerequisites
 
 - Phase 01 fully checked off.
-- Decision recorded in `00-overview.md`: dev test domains. Default: `alpha.localhost` (`en-GB`), `beta.localhost` (`de-DE`), `gamma.localhost` (`en-US`).
+- Decision recorded in `00-overview.md`: dev test domains — `alpha.localhost` (`en-US`, Spirituality), `beta.localhost` (`da-DK`, Spirituality), `gamma.localhost` (`en-US`, Wellness; seed-only fixture).
 - Local multi-domain testing uses `*.localhost` hostnames. Browsers and curl resolve these to 127.0.0.1 without `/etc/hosts` changes. In dev, the admin hostname is `localhost`.
 - Legal page texts (privacy policy, imprint, about, affiliate disclosure) come from **you**, not from AI generation. Placeholder text is fine for this phase.
 
 ## Skills in play
 
 - `build-guide-progress` — verify, summarize, and check boxes after each step.
-- `nextjs-developer` — this phase is mostly Next.js. Server Components by default, `loading.tsx` / `error.tsx` on async segments, `next/image` for all content images, `next build` must pass. **Allowed client components:** none are expected. The mobile menu uses `<details>`/`<summary>`, so no JS is needed. Any exception must be justified in the step summary.
+- `nextjs-developer` — this phase is mostly Next.js. Server Components by default, `error.tsx` on async segments (no `loading.tsx` in the public tree — see step 13), `next/image` for all content images, `next build` must pass. **Allowed client components:** only the `error.tsx` boundaries, which Next requires to be Client Components. The mobile menu uses `<details>`/`<summary>`, so no JS is needed. Any exception must be justified in the step summary.
 
 Before writing routing or caching code, read the bundled Next.js 16 docs. Next 16 differs from older versions (e.g. Middleware is now `proxy.ts`, `revalidateTag` takes a cache-life profile, and `global-not-found` exists for apps whose root layouts sit under dynamic segments):
 - `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`
@@ -25,12 +25,12 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
 ## Steps
 
 1. **Write a seed script.** `src/scripts/seed.ts`, run with `npm run seed` (`payload run src/scripts/seed.ts`). It is idempotent — safe to run twice — and creates:
-   - Niche **Outdoor** (`outdoor`) for Alpha and Beta, and niche **Kitchen** (`kitchen`) for Gamma, so multi-niche grouping is exercised. Every domain requires a niche (phase 01).
-   - Domain **Alpha**: `alpha.localhost`, `en-GB`, Outdoor, distinct branding colors.
-   - Domain **Beta**: `beta.localhost`, `de-DE`, Outdoor, different branding. Same niche as Alpha, different country.
-   - Domain **Gamma**: `gamma.localhost`, `en-US`, Kitchen, different branding. Same language as Alpha, different country and niche.
+   - Niche **Spirituality** (`spirituality`) for Alpha and Beta, and niche **Wellness** (`wellness`) for Gamma, so multi-niche grouping is exercised. Every domain requires a niche (phase 01).
+   - Domain **Alpha**: `alpha.localhost`, `en-US`, Spirituality, distinct branding colors.
+   - Domain **Beta**: `beta.localhost`, `da-DK`, Spirituality, different branding. Same niche as Alpha, different country and language.
+   - Domain **Gamma**: `gamma.localhost`, `en-US`, Wellness, different branding. Same locale as Alpha, different niche. A seed-only fixture, not a launch country.
    - For each domain, content written in that domain's language: 3 published listicles with 3–5 products (placeholder product images from an allowed remote host) and a featured image, 3 published informational posts with Lexical bodies (headings, paragraphs, an inline link) and a featured image, 1 draft, and 1 scheduled post.
-   - One Alpha post and one Gamma post sharing the same slug, to prove domain isolation.
+   - One Alpha post and one Gamma post sharing the same slug (`best-meditation-cushions`), to prove domain isolation.
    Later phases add required fields; each of those steps updates this script.
    **Verify:** running `npm run seed` twice leaves the same document counts (no duplicates), and the admin shows the data above.
 
@@ -49,7 +49,7 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
 4. **Write `src/proxy.ts` with hostname rewrite, admin lockdown, and environment guard.**
    - `ADMIN_HOSTNAME` (dev: `localhost`) and `SITE_ENV` (`development` | `staging` | `production`) go in `.env.example`.
    - **On the admin host:** `/admin`, `/api`, and `/preview` pass through untouched. Any other path redirects to `/admin`.
-   - **On every other host:** `/admin`, `/api`, and `/preview` return 404. Every other public path is rewritten from `/{path}` to `/{hostname}{path}`, e.g. `beta.localhost:3000/beste-zelte` → `/beta.localhost/beste-zelte`. There is no locale segment.
+   - **On every other host:** `/admin`, `/api`, and `/preview` return 404. Every other public path is rewritten from `/{path}` to `/{hostname}{path}`, e.g. `beta.localhost:3000/bedste-meditationspuder` → `/beta.localhost/bedste-meditationspuder`. There is no locale segment.
    - Exclude `/_next` and static files through the `matcher`.
    - When `SITE_ENV !== 'production'`, add `X-Robots-Tag: noindex, nofollow` to every response.
    - The proxy does **no database access** — Next's docs say Proxy isn't for data fetching. Unknown domains are handled by the routes in step 5.
@@ -69,19 +69,19 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
    src/app/(frontend)/[host]/sitemaps/[chunk]/route.ts     → step 14
    src/app/(frontend)/[host]/robots.txt/route.ts           → step 14
    src/app/global-not-found.tsx                            → 404 for URLs matching no route (enable the flag per the docs)
-   + loading.tsx / error.tsx / not-found.tsx at [host] and [slug]
+   + error.tsx / not-found.tsx at [host] and [slug] (no loading.tsx — see step 13)
    ```
    - Move `globals.css` into this tree and delete the placeholder `(frontend)/layout.tsx` and `page.tsx` from phase 01.
    - For an unknown host, `[host]/layout.tsx` renders a neutral unbranded shell (`lang="en"`), and every page and route handler under `[host]` calls `notFound()` or returns 404, so no content from any domain leaks onto an unknown host.
-   **Verify:** `alpha.localhost:3000/` → 200 with `<html lang="en-GB"`. `beta.localhost:3000/` → 200 with `<html lang="de-DE"`. `unknown.localhost:3000/` → 404 without any domain's branding. Paths like `alpha.localhost:3000/en/anything` are treated as a slug and 404, since there is no locale routing.
+   **Verify:** `alpha.localhost:3000/` → 200 with `<html lang="en-US"`. `beta.localhost:3000/` → 200 with `<html lang="da-DK"`. `unknown.localhost:3000/` → 404 without any domain's branding. Paths like `alpha.localhost:3000/en/anything` are treated as a slug and 404, since there is no locale routing.
 
 6. **Add the site shell and branding.**
    - Header: domain name/logo and a menu linking to the front page. There is no language switcher — each domain has one language.
    - Footer: affiliate disclosure text in the domain's language, links to that domain's legal pages (step 11), and the year.
    - Apply `branding.primaryColor` / `accentColor` as CSS custom properties on `<body>` from the server, mapped through Tailwind v4 `@theme` tokens in `globals.css`. Components use the tokens (`bg-primary`) — never a hardcoded brand color.
-   - UI strings (menu labels, "Buy now", disclosure, 404 text, date formats) live in `src/lib/i18n/dictionaries/{language}.ts`, keyed by **language** (`languageOf(domain.locale)`), and are loaded server-side. `en-GB` and `en-US` share `en`. Format dates and numbers with `Intl` using the full `domain.locale`, so they follow country conventions.
+   - UI strings (menu labels, "Buy now", disclosure, 404 text, date formats) live in `src/lib/i18n/dictionaries/{language}.ts`, keyed by **language** (`languageOf(domain.locale)`), and are loaded server-side. Locales that share a language (e.g. a future `en-GB` next to `en-US`) share one dictionary. Format dates and numbers with `Intl` using the full `domain.locale`, so they follow country conventions.
    - The mobile menu uses `<details>`/`<summary>` (no client JS).
-   **Verify:** Alpha, Beta, and Gamma render with visibly different primary colors. Beta shows German UI strings. Alpha and Gamma show English UI strings, with a published date formatted `15 September 2026` on Alpha and `September 15, 2026` on Gamma. `grep -rn "use client" src/app/\(frontend\) src/components` returns nothing.
+   **Verify:** Alpha, Beta, and Gamma render with visibly different primary colors. Beta shows Danish UI strings. Alpha and Gamma show English UI strings. A published date is formatted `September 15, 2026` on Alpha and `15. september 2026` on Beta. `grep -rln "use client" src/app/\(frontend\) src/components` lists only the two `error.tsx` files.
 
 7. **Build the front page.** It lists the domain's published posts, newest `publishedAt` first. Show featured image, title (`meta.title`, falling back to the slug), intro excerpt, and a link to `/{slug}`. Paginate with `?page=N` read from `searchParams` on the server. Cache with the `postList(domainId)` tag.
    **Verify:** Alpha's front page lists only Alpha's published posts — no drafts, scheduled posts, or Beta or Gamma posts — and `?page=2` works when there are more posts than one page holds.
@@ -90,7 +90,7 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
    **Verify:** a published listicle and a published informational post both render. The draft's slug returns 404. The shared slug from step 1 renders different content on Alpha and Gamma. An Alpha slug requested on Beta returns 404.
 
 9. **Build the listicle template.** For each product, in order: title, description, and product image via `next/image`, with the affiliate image hosts added to `images.remotePatterns`. The **Buy now** button (dictionary string) is an `<a>` pointing at the product's `affiliateUrl`, with `rel="sponsored nofollow noopener"` and `target="_blank"`. Add the affiliate disclosure near the top.
-   **Verify:** a listicle shows all products in admin order, every Buy now link has `rel="sponsored nofollow noopener"` and the product's affiliate URL, the button text is German on Beta, and the rendered HTML contains no plain `<img>` tags for content images.
+   **Verify:** a listicle shows all products in admin order, every Buy now link has `rel="sponsored nofollow noopener"` and the product's affiliate URL, the button text is Danish (`Køb nu`) on Beta, and the rendered HTML contains no plain `<img>` tags for content images.
 
 10. **Build the informational template.** Render `body` with `RichText` from `@payloadcms/richtext-lexical/react` as a Server Component. Confirm it needs no `'use client'`; if it does, isolate it in a leaf and note that in the summary. Style prose with `@tailwindcss/typography` (Tailwind v4: `@plugin "@tailwindcss/typography";` in `globals.css`). Inline links in the body that point off-site get `rel="sponsored nofollow noopener"` through a custom link converter.
     **Verify:** headings, paragraphs, and links from the seeded body render with typography styles, and off-site links carry the sponsored rel.
@@ -102,7 +102,7 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
     - Seed: `about`, `privacy`, `imprint`, and `affiliate-disclosure` for each domain, in that domain's language, with placeholder text marked "replace before launch".
     - This collection isn't in spec §4. Report it as a deviation in the wrap-up.
     - Regenerate types and add a migration.
-    **Verify:** `beta.localhost:3000/impressum` renders the German imprint. The footer lists the four pages on each domain. Creating a page whose slug equals an existing post's slug on the same domain is rejected. A draft page 404s.
+    **Verify:** `beta.localhost:3000/kolofon` renders the Danish imprint. The footer lists the four pages on each domain. Creating a page whose slug equals an existing post's slug on the same domain is rejected. A draft page 404s.
 
 12. **Add metadata and JSON-LD.**
     - `generateMetadata` on `[slug]/page.tsx` and `page.tsx` reads the SEO plugin's `meta` (title, description, image) and returns `title`, `description`, `openGraph` (with image URL and `locale: ogLocaleOf(domain.locale)`), and `alternates.canonical`.
@@ -110,10 +110,11 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
     - All absolute URLs are built with `src/lib/urls.ts`.
     - Legal pages get the same treatment.
     - JSON-LD in a server-rendered `<script type="application/ld+json">`, with `<` escaped and `inLanguage` set to the domain locale: `Article` for informational posts, and `Article` + `ItemList` of products for listicles. No `Product` schema with invented offers or ratings.
-    **Verify:** view source on a Beta article: `<title>` matches `meta.title`, there's exactly one canonical (`http://beta.localhost:3000/<slug>`), `og:locale` is `de_DE`, there are no `hreflang` links, and the JSON-LD parses with `JSON.parse` and has `"inLanguage":"de-DE"`.
+    **Verify:** view source on a Beta article: `<title>` matches `meta.title`, there's exactly one canonical (`http://beta.localhost:3000/<slug>`), `og:locale` is `da_DK`, there are no `hreflang` links, and the JSON-LD parses with `JSON.parse` and has `"inLanguage":"da-DK"`.
 
-13. **Add error, loading, and not-found states.** `not-found.tsx` in the domain's language, `global-not-found.tsx` for unmatched URLs, and `error.tsx` + `loading.tsx` on every async segment (`[host]`, `[slug]`). Unknown slugs render the branded 404 with a 404 status.
-    **Verify:** `curl -s -o /dev/null -w '%{http_code}' beta.localhost:3000/does-not-exist` prints `404`, and the page shows Beta's branding and German 404 text.
+13. **Add error and not-found states.** `not-found.tsx` in the domain's language, `global-not-found.tsx` for unmatched URLs, and `error.tsx` on every async segment (`[host]`, `[slug]`). Unknown slugs render the branded 404 with a 404 status.
+    - **No `loading.tsx` in the public `[host]` tree.** In Next 16 a `loading.tsx` above a page starts streaming the response, and once headers are sent `notFound()` can only produce a 200 soft 404 (`loading.md` § Status Codes). The proxy can't check slugs because it does no database access (step 4). Pages resolve their document before rendering, and slower subtrees stream through their own `<Suspense>` (e.g. the front page's post list).
+    **Verify:** `curl -s -o /dev/null -w '%{http_code}' beta.localhost:3000/does-not-exist` prints `404`, the page shows Beta's branding and Danish 404 text, and `find 'src/app/(frontend)' -name loading.tsx` returns nothing.
 
 14. **Add sitemaps and robots.**
     - The proxy rewrites `/sitemap.xml`, `/sitemaps/*`, and `/robots.txt` into the `[host]` tree like any other path.
@@ -149,6 +150,6 @@ Before writing routing or caching code, read the bundled Next.js 16 docs. Next 1
 - [x] **Step 10:** Informational bodies render server-side with typography styles, and off-site links are marked sponsored
 - [x] **Step 11:** A per-domain `pages` collection serves legal pages linked from the footer, with slugs unique across posts and pages within a domain
 - [x] **Step 12:** `generateMetadata` uses SEO plugin fields with an absolute canonical and `og:locale`, no hreflang, and valid JSON-LD with `inLanguage`
-- [ ] **Step 13:** Unknown slugs return a branded 404 in the domain's language with status 404; async segments have `loading.tsx` and `error.tsx`
+- [x] **Step 13:** Unknown slugs return a branded 404 in the domain's language with status 404; async segments have `error.tsx`, and the public tree has no `loading.tsx` (it would turn 404s into streamed 200s)
 - [x] **Step 14:** Each domain serves a valid sitemap (splitting into an index above the chunk size) and an environment-aware `robots.txt`
 - [x] **Step 15:** `npm run build` passes and Lighthouse Performance, SEO, and Accessibility are all ≥ 90 on a listicle page

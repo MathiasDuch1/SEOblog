@@ -15,7 +15,7 @@ The SEO plugin is on posts, public read is limited to published content, and the
 - Node 22 active (`nvm use`).
 - A Supabase project for development. From **Project Settings → Database → Connection string**, copy the **Session pooler** URI (IPv4-compatible).
 - A Cloudflare R2 bucket and an R2 API token with read/write access to it. A public domain for the bucket, e.g. `media.<yourdomain>`, or the `r2.dev` URL for development.
-- Decision recorded in `00-overview.md`: the supported locales (language + country codes, e.g. `en-GB`, `de-DE`).
+- Decision recorded in `00-overview.md`: the supported locales (language + country codes, e.g. `en-US`, `da-DK`).
 
 ## Skills in play
 
@@ -50,12 +50,12 @@ The SEO plugin is on posts, public read is limited to published content, and the
 7. **Define supported locales and remove Payload localization.** There are no language variants inside documents, because each domain publishes in exactly one language (spec §4).
    - Delete the `localization` block from `payload.config.ts`, and every `localized: true` from the collections.
    - Create `src/lib/locales.ts`, which exports:
-     - `SUPPORTED_LOCALES` — BCP 47 language-country codes from the decision table, e.g. `['en-GB', 'en-US', 'de-DE']`
-     - `languageOf('de-DE')` → `'de'`
-     - `countryOf('de-DE')` → `'DE'`
-     - `ogLocaleOf('de-DE')` → `'de_DE'`
+     - `SUPPORTED_LOCALES` — BCP 47 language-country codes from the decision table, e.g. `['en-US', 'da-DK']`
+     - `languageOf('da-DK')` → `'da'`
+     - `countryOf('da-DK')` → `'DK'`
+     - `ogLocaleOf('da-DK')` → `'da_DK'`
    - Adding a new country or language later means editing this list (plus a UI dictionary in phase 02). It needs no database migration.
-   **Verify:** `grep -rn "localized" src/collections src/payload.config.ts` returns nothing, and the post edit screen has no locale switcher. The Supabase schema has no `*_locales` tables once the dev database is recreated or pushed. `vitest` isn't installed yet, so a short `payload run` script prints the three helper results for `de-DE` and is deleted afterwards.
+   **Verify:** `grep -rn "localized" src/collections src/payload.config.ts` returns nothing, and the post edit screen has no locale switcher. The Supabase schema has no `*_locales` tables once the dev database is recreated or pushed. `vitest` isn't installed yet, so a short `payload run` script prints the three helper results for `da-DK` and is deleted afterwards.
 
 8. **Align the collections with spec §4.** Review the stubs in `src/collections/` and adjust:
    - **Niches** — `name`, `slug` (unique, lowercase), `description`. Logged-in users only; niches are internal and never shown to visitors.

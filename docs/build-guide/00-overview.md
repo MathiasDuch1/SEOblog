@@ -40,7 +40,7 @@ If a phase is stopped partway through, the checklist shows exactly where to pick
 - Data is read through Payload's **Local API** (`getPayload({ config })`) in Server Components, Route Handlers, and Server Actions — never fetched from the browser.
 - Mutations go through Server Actions or Route Handlers, and each one checks authentication on the server.
 - Modules that touch secrets, the database, or third-party APIs live in `src/lib/` and start with `import 'server-only'`.
-- Async route segments get `loading.tsx` and `error.tsx`.
+- Async route segments get `loading.tsx` and `error.tsx` — except the public `[host]` tree, which gets no `loading.tsx` because streaming would turn 404s into 200s (see phase 02 step 13).
 - `npm run build` must pass at the end of every phase.
 
 **SEO metadata comes from the Payload SEO plugin.** Pages render the plugin's stored `meta` fields through `generateMetadata`. Titles and descriptions are never hand-built in JSX.
