@@ -52,6 +52,32 @@ export const Domains: CollectionConfig = {
         isSupportedLocale(value) || `Locale must be one of: ${SUPPORTED_LOCALES.join(', ')}`,
     },
     {
+      name: 'affiliate',
+      type: 'group',
+      admin: {
+        description: "Where this domain's listicle products come from — the affiliate marketplace for its country",
+      },
+      fields: [
+        {
+          name: 'source',
+          type: 'text',
+          required: true,
+          defaultValue: 'mock',
+          admin: { description: 'Product source implementation: `mock`, or the affiliate network name' },
+        },
+        {
+          name: 'marketplace',
+          type: 'text',
+          admin: { description: 'Marketplace for this country, e.g. amazon.com or amazon.de' },
+        },
+        {
+          name: 'partnerTag',
+          type: 'text',
+          admin: { description: 'Affiliate partner/tracking tag added to every product link' },
+        },
+      ],
+    },
+    {
       name: 'branding',
       type: 'group',
       fields: [

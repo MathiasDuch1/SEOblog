@@ -67,13 +67,14 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
-    media: Media;
-    niches: Niche;
-    domains: Domain;
-    'keyword-clusters': KeywordCluster;
     posts: Post;
     pages: Page;
+    media: Media;
+    'keyword-clusters': KeywordCluster;
+    'generation-batches': GenerationBatch;
+    domains: Domain;
+    niches: Niche;
+    users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -81,13 +82,14 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
-    niches: NichesSelect<false> | NichesSelect<true>;
-    domains: DomainsSelect<false> | DomainsSelect<true>;
-    'keyword-clusters': KeywordClustersSelect<false> | KeywordClustersSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    'keyword-clusters': KeywordClustersSelect<false> | KeywordClustersSelect<true>;
+    'generation-batches': GenerationBatchesSelect<false> | GenerationBatchesSelect<true>;
+    domains: DomainsSelect<false> | DomainsSelect<true>;
+    niches: NichesSelect<false> | NichesSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -129,121 +131,6 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
- */
-export interface Media {
-  id: number;
-  alt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "niches".
- */
-export interface Niche {
-  id: number;
-  /**
-   * Display name, e.g. Outdoor
-   */
-  name: string;
-  /**
-   * Short identifier used in scripts and filters, e.g. outdoor
-   */
-  slug: string;
-  /**
-   * What this niche covers, for editors
-   */
-  description?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "domains".
- */
-export interface Domain {
-  id: number;
-  name: string;
-  /**
-   * The domain this site is served from, e.g. example.com
-   */
-  hostname: string;
-  /**
-   * The topic area this domain covers. Content runs are grouped by niche.
-   */
-  niche: number | Niche;
-  /**
-   * The single language + country this domain publishes in. One of: en-US, da-DK
-   */
-  locale: string;
-  branding?: {
-    logo?: (number | null) | Media;
-    primaryColor?: string | null;
-    accentColor?: string | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "keyword-clusters".
- */
-export interface KeywordCluster {
-  id: number;
-  source: 'semrush';
-  clusterName: string;
-  keywords: {
-    keyword: string;
-    searchVolume?: number | null;
-    id?: string | null;
-  }[];
-  targetDomain: number | Domain;
-  targetTemplate: 'listicle' | 'informational';
-  status: 'unused' | 'assigned' | 'used';
-  /**
-   * The article generated from this cluster, once created
-   */
-  post?: (number | null) | Post;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts".
  */
 export interface Post {
@@ -256,6 +143,10 @@ export interface Post {
    * Every post belongs to exactly one domain; it is never shared across domains
    */
   domain: number | Domain;
+  /**
+   * The keyword cluster this post was generated from
+   */
+  sourceCluster?: (number | null) | KeywordCluster;
   template: 'listicle' | 'informational';
   /**
    * URL segment, unique within the domain
@@ -278,7 +169,7 @@ export interface Post {
          */
         imageUrl?: string | null;
         /**
-         * Link for this domain's country marketplace, e.g. amazon.de
+         * Link for this domain's country marketplace, e.g. amazon.com
          */
         affiliateUrl: string;
         id?: string | null;
@@ -311,6 +202,113 @@ export interface Post {
      */
     image?: (number | null) | Media;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "domains".
+ */
+export interface Domain {
+  id: number;
+  name: string;
+  /**
+   * The domain this site is served from, e.g. example.com
+   */
+  hostname: string;
+  /**
+   * The topic area this domain covers. Content runs are grouped by niche.
+   */
+  niche: number | Niche;
+  /**
+   * The single language + country this domain publishes in. One of: en-US, da-DK
+   */
+  locale: string;
+  /**
+   * Where this domain's listicle products come from — the affiliate marketplace for its country
+   */
+  affiliate: {
+    /**
+     * Product source implementation: `mock`, or the affiliate network name
+     */
+    source: string;
+    /**
+     * Marketplace for this country, e.g. amazon.com or amazon.de
+     */
+    marketplace?: string | null;
+    /**
+     * Affiliate partner/tracking tag added to every product link
+     */
+    partnerTag?: string | null;
+  };
+  branding?: {
+    logo?: (number | null) | Media;
+    primaryColor?: string | null;
+    accentColor?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "niches".
+ */
+export interface Niche {
+  id: number;
+  /**
+   * Display name, e.g. Outdoor
+   */
+  name: string;
+  /**
+   * Short identifier used in scripts and filters, e.g. outdoor
+   */
+  slug: string;
+  /**
+   * What this niche covers, for editors
+   */
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  alt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "keyword-clusters".
+ */
+export interface KeywordCluster {
+  id: number;
+  source: 'semrush';
+  clusterName: string;
+  keywords: {
+    keyword: string;
+    searchVolume?: number | null;
+    id?: string | null;
+  }[];
+  targetDomain: number | Domain;
+  targetTemplate: 'listicle' | 'informational';
+  status: 'unused' | 'assigned' | 'used';
+  /**
+   * The article generated from this cluster, once created
+   */
+  post?: (number | null) | Post;
   updatedAt: string;
   createdAt: string;
 }
@@ -356,6 +354,84 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "generation-batches".
+ */
+export interface GenerationBatch {
+  id: number;
+  anthropicBatchId: string;
+  /**
+   * Every cluster in a batch targets this domain
+   */
+  domain: number | Domain;
+  /**
+   * Schedule the imported posts automatically once they are ready (phase 06)
+   */
+  autoSchedule?: boolean | null;
+  status: 'submitted' | 'in_progress' | 'ended' | 'importing' | 'imported' | 'failed';
+  requests?:
+    | {
+        customId: string;
+        cluster: number | KeywordCluster;
+        post?: (number | null) | Post;
+        importState: 'pending' | 'imported' | 'errored';
+        error?: string | null;
+        inputTokens?: number | null;
+        outputTokens?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * The product list per cluster (keyed by custom ID) that the model saw
+   */
+  productSnapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  submittedAt?: string | null;
+  endedAt?: string | null;
+  importedAt?: string | null;
+  requestCounts?: {
+    processing?: number | null;
+    succeeded?: number | null;
+    errored?: number | null;
+    canceled?: number | null;
+    expired?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -379,32 +455,36 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: number | User;
-      } | null)
-    | ({
-        relationTo: 'media';
-        value: number | Media;
-      } | null)
-    | ({
-        relationTo: 'niches';
-        value: number | Niche;
-      } | null)
-    | ({
-        relationTo: 'domains';
-        value: number | Domain;
-      } | null)
-    | ({
-        relationTo: 'keyword-clusters';
-        value: number | KeywordCluster;
-      } | null)
-    | ({
         relationTo: 'posts';
         value: number | Post;
       } | null)
     | ({
         relationTo: 'pages';
         value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'keyword-clusters';
+        value: number | KeywordCluster;
+      } | null)
+    | ({
+        relationTo: 'generation-batches';
+        value: number | GenerationBatch;
+      } | null)
+    | ({
+        relationTo: 'domains';
+        value: number | Domain;
+      } | null)
+    | ({
+        relationTo: 'niches';
+        value: number | Niche;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -450,102 +530,12 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
- */
-export interface UsersSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
- */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "niches_select".
- */
-export interface NichesSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  description?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "domains_select".
- */
-export interface DomainsSelect<T extends boolean = true> {
-  name?: T;
-  hostname?: T;
-  niche?: T;
-  locale?: T;
-  branding?:
-    | T
-    | {
-        logo?: T;
-        primaryColor?: T;
-        accentColor?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "keyword-clusters_select".
- */
-export interface KeywordClustersSelect<T extends boolean = true> {
-  source?: T;
-  clusterName?: T;
-  keywords?:
-    | T
-    | {
-        keyword?: T;
-        searchVolume?: T;
-        id?: T;
-      };
-  targetDomain?: T;
-  targetTemplate?: T;
-  status?: T;
-  post?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
   domain?: T;
+  sourceCluster?: T;
   template?: T;
   slug?: T;
   status?: T;
@@ -594,6 +584,141 @@ export interface PagesSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "keyword-clusters_select".
+ */
+export interface KeywordClustersSelect<T extends boolean = true> {
+  source?: T;
+  clusterName?: T;
+  keywords?:
+    | T
+    | {
+        keyword?: T;
+        searchVolume?: T;
+        id?: T;
+      };
+  targetDomain?: T;
+  targetTemplate?: T;
+  status?: T;
+  post?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "generation-batches_select".
+ */
+export interface GenerationBatchesSelect<T extends boolean = true> {
+  anthropicBatchId?: T;
+  domain?: T;
+  autoSchedule?: T;
+  status?: T;
+  requests?:
+    | T
+    | {
+        customId?: T;
+        cluster?: T;
+        post?: T;
+        importState?: T;
+        error?: T;
+        inputTokens?: T;
+        outputTokens?: T;
+        id?: T;
+      };
+  productSnapshot?: T;
+  submittedAt?: T;
+  endedAt?: T;
+  importedAt?: T;
+  requestCounts?:
+    | T
+    | {
+        processing?: T;
+        succeeded?: T;
+        errored?: T;
+        canceled?: T;
+        expired?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "domains_select".
+ */
+export interface DomainsSelect<T extends boolean = true> {
+  name?: T;
+  hostname?: T;
+  niche?: T;
+  locale?: T;
+  affiliate?:
+    | T
+    | {
+        source?: T;
+        marketplace?: T;
+        partnerTag?: T;
+      };
+  branding?:
+    | T
+    | {
+        logo?: T;
+        primaryColor?: T;
+        accentColor?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "niches_select".
+ */
+export interface NichesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

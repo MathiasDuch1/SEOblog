@@ -55,7 +55,7 @@ Every domain is one country with one language. Wherever the interfaces show a do
    - With auto-schedule on and mocks enabled, the imported posts end `scheduled` in Beta's free slots once the cron has run.
 
 5. **Show batch status and resubmission.**
-   - List `generation-batches` for the selected domain: submitted time, status, request counts, imported/errored rows, total tokens with actual cost (from recorded usage × pricing), and the auto-schedule report.
+   - List `generation-batches` for the selected domain: submitted time, status, request counts, imported/errored rows, total tokens with actual cost (from recorded usage × pricing — first extend the phase 03 request rows to store cache-write and cache-read tokens separately from `inputTokens`, since they are billed at different rates), and the auto-schedule report.
    - "Import now" runs `importBatch` chunks for an `ended` batch until done.
    - Rows expand to show per-request errors. "Resubmit failed clusters" (behind the confirm leaf) calls phase 03's `submitBatch` with that batch's errored clusters, which are back to `unused`.
    - `scheduler-status.lastGenerationPollAt` appears at the top, with a warning if it's older than 30 minutes.

@@ -49,6 +49,8 @@ If a phase is stopped partway through, the checklist shows exactly where to pick
 
 **Node 22** (`nvm use`). Payload's CLI does not work on Node 26.
 
+**Scripts.** `payload run` scripts that import `server-only` modules from `src/lib/` run with `NODE_OPTIONS=--conditions=react-server`, and their npm script ends with `--` so flags reach the script (`payload run` otherwise swallows them). Copy the `generate` script in `package.json` (phase 03).
+
 **Phase files are only edited to check boxes.** Deviations from the guide, workarounds, and open questions are reported in the session wrap-up, not written into the phase files.
 
 **Stay inside the phase.** Each phase has an "Out of scope" section. Work listed there belongs to a later phase, even if it looks quick.

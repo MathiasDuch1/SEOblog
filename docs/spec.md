@@ -80,13 +80,14 @@ Both templates map to structured content models (not free-form rich text where a
 - name, hostname, branding/theme config
 - `niche` — required relationship to Niche; exactly one niche per domain
 - `locale` — the single language + country the domain publishes in (e.g. `de-DE`, `en-GB`, `da-DK`); drives the article language, `<html lang>`, UI strings, and Open Graph locale
-- Semrush regional database, affiliate marketplace settings, and publishing timezone for that country
+- Semrush regional database, affiliate marketplace settings (product source, marketplace, partner tag), and publishing timezone for that country
 
 **KeywordCluster**
 - source (Semrush), cluster name, list of keywords, target domain, target template (listicle/informational), status (`unused` | `assigned` | `used`)
 - One cluster produces exactly one article, written in the target domain's language
 
 **Post** (one document per article, belonging to exactly one domain)
+- `sourceCluster` — the keyword cluster the article was generated from (unique; empty for hand-written posts)
 - `domain` — relationship to Domain (an article's identity is scoped to its domain; two domains never share a Post document, even if both covered the same topic or were generated in the same batch run)
 - `title` — the article headline (H1), required, written in the domain's language
 - `template`: `listicle` | `informational`
@@ -103,6 +104,11 @@ Both templates map to structured content models (not free-form rich text where a
 - `body`: rich text / structured sections (informational template only)
 - `summary`
 - SEO fields (managed by the Payload SEO plugin)
+
+**GenerationBatch** (internal; added in build phase 03)
+- One Claude Message Batch for one domain: the Anthropic batch ID, status, and one row per requested cluster with its import state, resulting post, error, and token usage
+- A snapshot of the products each request was given, so imported listicles use exactly the products the model wrote about
+- Makes imports resumable and idempotent, and lets failed clusters be resubmitted
 
 Content is not localized inside documents. Each article is written once, in its domain's language, and lives on that domain only. Because `domain` is a field on the document, a given article's data is never shared or duplicated across domains — `example.de`'s "10 best hiking backpacks" and `example.co.uk`'s "10 best hiking backpacks" are separate Post documents, researched and generated separately, and editing one never touches the other.
 

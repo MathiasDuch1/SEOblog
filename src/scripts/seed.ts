@@ -57,6 +57,7 @@ type SeedDomain = {
   nicheSlug: string
   primaryColor: string
   accentColor: string
+  affiliate: { source: string; marketplace: string; partnerTag: string }
   posts: SeedPost[]
   pages: SeedPage[]
 }
@@ -790,6 +791,7 @@ const domains: SeedDomain[] = [
     locale: 'en-US',
     nicheSlug: 'spirituality',
     primaryColor: '#6d28d9',
+    affiliate: { source: 'mock', marketplace: 'amazon.com', partnerTag: 'alpha-20' },
     accentColor: '#f59e0b',
     posts: alphaPosts,
     pages: enPages('Alpha'),
@@ -800,6 +802,7 @@ const domains: SeedDomain[] = [
     locale: 'da-DK',
     nicheSlug: 'spirituality',
     primaryColor: '#047857',
+    affiliate: { source: 'mock', marketplace: 'amazon.de', partnerTag: 'beta-21' },
     accentColor: '#ea580c',
     posts: betaPosts,
     pages: daPages('Beta'),
@@ -810,6 +813,7 @@ const domains: SeedDomain[] = [
     locale: 'en-US',
     nicheSlug: 'wellness',
     primaryColor: '#be123c',
+    affiliate: { source: 'mock', marketplace: 'amazon.com', partnerTag: 'gamma-20' },
     accentColor: '#0891b2',
     posts: gammaPosts,
     pages: enPages('Gamma'),
@@ -884,6 +888,7 @@ try {
       hostname: seedDomain.hostname,
       locale: seedDomain.locale,
       niche: nicheIds[seedDomain.nicheSlug],
+      affiliate: seedDomain.affiliate,
       branding: {
         primaryColor: seedDomain.primaryColor,
         accentColor: seedDomain.accentColor,

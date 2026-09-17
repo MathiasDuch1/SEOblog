@@ -14,9 +14,13 @@
     "migrate": "payload migrate",
     "migrate:create": "payload migrate:create",
     "migrate:status": "payload migrate:status",
-    "seed": "payload run src/scripts/seed.ts"
+    "seed": "payload run src/scripts/seed.ts",
+    "test": "vitest run",
+    "generate": "NODE_OPTIONS=--conditions=react-server payload run src/scripts/generate.ts --",
+    "generation:poll": "NODE_OPTIONS=--conditions=react-server payload run src/scripts/generation-poll.ts --"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
     "@payloadcms/db-postgres": "^3.89.0",
     "@payloadcms/next": "^3.89.0",
     "@payloadcms/plugin-seo": "^3.89.0",
@@ -28,17 +32,19 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
-    "sharp": "^0.35.4"
+    "sharp": "^0.35.4",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.20",
-    "@types/node": "^20",
+    "@types/node": "^22.20.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.1"
   }
 }

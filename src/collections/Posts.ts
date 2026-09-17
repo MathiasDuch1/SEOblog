@@ -43,6 +43,17 @@ export const Posts: CollectionConfig = {
       },
     },
     {
+      name: 'sourceCluster',
+      type: 'relationship',
+      relationTo: 'keyword-clusters',
+      unique: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'The keyword cluster this post was generated from',
+      },
+    },
+    {
       name: 'template',
       type: 'select',
       required: true,
@@ -131,7 +142,7 @@ export const Posts: CollectionConfig = {
           type: 'text',
           required: true,
           admin: {
-            description: "Link for this domain's country marketplace, e.g. amazon.de",
+            description: "Link for this domain's country marketplace, e.g. amazon.com",
           },
         },
       ],

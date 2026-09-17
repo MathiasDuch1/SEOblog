@@ -9,6 +9,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
 import { Domains } from './collections/Domains'
+import { GenerationBatches } from './collections/GenerationBatches'
 import { KeywordClusters } from './collections/KeywordClusters'
 import { Media } from './collections/Media'
 import { Niches } from './collections/Niches'
@@ -27,7 +28,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Niches, Domains, KeywordClusters, Posts, Pages],
+  collections: [Users, Media, Niches, Domains, KeywordClusters, Posts, Pages, GenerationBatches],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

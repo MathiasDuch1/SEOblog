@@ -35,7 +35,8 @@ At production volume — a month of content for several country domains — impo
 
 ## Steps
 
-1. **Install dependencies and set up testing.** Install `@anthropic-ai/sdk` and `zod`, plus `vitest` as a dev dependency with an `npm test` script. Add `ANTHROPIC_API_KEY`, `GENERATION_MODEL=claude-sonnet-5`, and `GENERATION_EFFORT=medium` to `.env.example`. Create `src/lib/ai/client.ts` (server-only), which exports a single `Anthropic` client.
+1. **Install dependencies and set up testing.** Install `@anthropic-ai/sdk` and `zod`, plus `vitest` as a dev dependency with an `npm test` script. vitest 5 requires `@types/node` 22 or later, matching the project's Node 22; alias `server-only` to an empty stub in `vitest.config.ts` so server modules can be unit-tested. Add `ANTHROPIC_API_KEY`, `GENERATION_MODEL=claude-sonnet-5`, and `GENERATION_EFFORT=medium` to `.env.example`. Create `src/lib/ai/client.ts` (server-only), which exports a single `Anthropic` client.
+   - `server-only` throws when a `payload run` script imports a `src/lib` module, so every pipeline script runs with `NODE_OPTIONS=--conditions=react-server`. `payload run` also drops flags such as `--clusters`, so each npm script ends with a trailing `--`. See the "Scripts" rule in `00-overview.md`.
    **Verify:** `npm test` runs, even with zero tests, and a one-off `payload run` script calling `client.models.retrieve(process.env.GENERATION_MODEL)` prints the model's `id`. Delete the script afterwards.
 
 2. **Link posts to clusters and add batch tracking.**
@@ -50,9 +51,9 @@ At production volume — a month of content for several country domains — impo
    **Verify:** `generation-batches` appears in the admin sidebar and is denied to anonymous REST requests, a second post with the same `sourceCluster` is rejected, `tsc --noEmit` passes, and a new migration file exists.
 
 3. **Define output schemas.** `src/lib/ai/schemas.ts` contains zod schemas for one article's generated content:
-   - **Listicle:** `slug` (lowercase kebab-case ASCII, transliterating characters like `æ → ae`, `ø → oe`, or `å → aa`, written in the domain's language), `intro`, `products[]` (`productRef` echoing the input product id, `title`, `description`), `summary`, `meta` (`title` ≤ 60 chars, `description` ≤ 160 chars).
-   - **Informational:** `slug`, `intro`, `sections[]` (`heading`, `paragraphs[]`, optional `links[]` with `text` + `productRef`), `summary`, `meta`.
-   Build the JSON schema for `output_config.format` from these zod schemas. Check with the `claude-api` skill whether the SDK's zod helper serializes correctly inside batch `params`; if not, pass `{ type: 'json_schema', schema }` built from `z.toJSONSchema`. On import, parse the text and validate with the **same** zod schema.
+   - **Listicle:** `title` (the H1 headline, ≤ 110 chars — `Posts.title` is required), `slug` (lowercase kebab-case ASCII, transliterating characters like `æ → ae`, `ø → oe`, or `å → aa`, written in the domain's language), `intro`, `products[]` (`productRef` echoing the input product id, `title`, `description`), `summary`, `meta` (`title` ≤ 60 chars, `description` ≤ 160 chars).
+   - **Informational:** `title`, `slug`, `intro`, `sections[]` (`heading`, `paragraphs[]`, optional `links[]` with `text` + `productRef`), `summary`, `meta`.
+   Build the JSON schema for `output_config.format` from these zod schemas. Check with the `claude-api` skill whether the SDK's zod helper serializes correctly inside batch `params`; if not, pass `{ type: 'json_schema', schema }` built from `z.toJSONSchema`. (It does: `zodOutputFormat` moves constraints the API doesn't support, such as `maxLength` and `pattern`, into field descriptions. Pass only its `type` and `schema`, not its client-side `parse` function.). On import, parse the text and validate with the **same** zod schema.
    **Verify:** `vitest` tests pass for a valid fixture and fail with clear errors for an over-long `meta.title`, a missing product, and a slug containing `ø` or spaces.
 
 4. **Convert sections to Lexical.** `src/lib/ai/toLexical.ts` converts `sections[]` into valid Lexical editor state JSON: `heading` nodes (h2), `paragraph` nodes, and link nodes for `links[]`. A `productRef` link resolves to that product's affiliate URL.
@@ -71,34 +72,34 @@ At production volume — a month of content for several country domains — impo
    **Verify:** a script prints 5 products for a test keyword on Beta (mock), with affiliate URLs pointing at Beta's configured marketplace, and on Alpha, with URLs pointing at Alpha's. With the real network configured for one domain, it prints real products from that country's marketplace, with image URLs returning 200 and the partner tag present, and the listicle renders them in line with the terms. If there are no credentials yet, say so and leave the real-feed box unchecked.
 
 6. **Write the prompt builders.** Put them in `src/lib/ai/prompts/{listicle,informational}.ts`.
-   - The **system prompt** is byte-identical across every request of a template, with no language, dates, IDs, or per-request data, and ends with a `cache_control` breakpoint so the shared prefix is cached across the batch and across domains. It covers voice, SEO writing rules, the output shape, and grounding rules: describe only facts present in the supplied product data, and never invent specs, prices, or ratings.
+   - The **system prompt** is byte-identical across every request of a template, with no language, dates, IDs, or per-request data, and ends with a `cache_control` breakpoint so the shared prefix is cached across the batch and across domains. It covers voice, SEO writing rules, the output shape, and grounding rules: describe only facts present in the supplied product data, never invent specs, prices, or ratings, never invent differences between products to make them sound distinct, and never mention a year or date. Informational link anchors are short phrases inside a sentence, never a pasted product title. The system prompt must be at least 1,024 tokens (Sonnet 5's minimum cacheable prefix), and the breakpoint uses the 1-hour TTL because batch requests can be processed more than 5 minutes apart.
    - The **user message** carries the per-request data:
      - domain name, and the domain `locale` spelled out (e.g. "Danish for readers in Denmark (da-DK)"), with the instruction to write natively for that market — spelling (e.g. US English for en-US), units (metric in Denmark, imperial in the US), and cultural references — not as a translation
      - primary keyword + supporting keywords
      - the template's target length
-     - for listicles, the product list with `productRef` ids
+     - the product list with `productRef` ids: every product for a listicle, in the order the article must use; for informational articles, up to 3 products the model may link to inline
    **Verify:** a `vitest` test asserts the system prompt is identical for clusters on Alpha and Beta, and snapshot tests pin one rendered user message per template, including the locale instruction.
 
 7. **Assemble and submit a batch.** `src/lib/generation/submitBatch.ts` → `submitBatch({ clusterIds })`:
    - Load clusters. Reject any whose status isn't `unused`, and reject a mix of target domains (one batch per domain).
    - A month of content is planned one niche at a time (spec §4): the caller selects a niche, and each of that niche's domains gets its own batch. `submitBatch` itself stays per domain; the niche is only how the caller groups the work. The niche comes from `domain.niche`, so nothing is stored on the batch.
-   - Listicles: fetch products once per cluster from `getProductSource(domain)`, and store the list in `productSnapshot`.
+   - Fetch products once per cluster from `getProductSource(domain)` — 5 for a listicle, 3 for an informational article's optional inline links — and store the list in `productSnapshot`, keyed by `custom_id`.
    - One request per cluster, with `custom_id = c{clusterId}`. Params: `model: GENERATION_MODEL`, `max_tokens: 16000`, `thinking: { type: 'adaptive' }`, `output_config: { effort: GENERATION_EFFORT, format: … }`, and the system and user prompts from step 6.
    - If the request count exceeds the API limits (see "Key API facts"), split into several batches.
    - Create the `generation-batches` doc(s) and set the clusters to `assigned` **after** the API accepts the batch. If submission throws, nothing changes.
-   - Script: `npm run generate -- --clusters <id,id,...>` (`payload run src/scripts/generate.ts`), plus `--niche <slug>`, which takes that niche's domains' `unused` clusters and submits one batch per domain.
+   - Script: `npm run generate -- --clusters <id,id,...>` (`NODE_OPTIONS=--conditions=react-server payload run src/scripts/generate.ts --`), plus `--niche <slug>`, which takes that niche's domains' `unused` clusters and submits one batch per domain.
    **Verify:** with mock products, 3 Beta clusters (2 listicles, 1 informational) create one batch with 3 requests. The batch doc has 3 `pending` rows and a product snapshot, and all three clusters are `assigned`. Mixing an Alpha cluster into the same call is rejected, with nothing submitted. `--niche spirituality` creates one batch per Spirituality domain (Alpha and Beta) and none for the Wellness domain (Gamma).
 
 8. **Poll and import results in resumable chunks.** `src/lib/generation/importBatch.ts` → `importBatch(batchDocId, { maxRows = IMPORT_CHUNK_SIZE })`:
    - Retrieve the batch and update `status` / `requestCounts`. Stop if it hasn't `ended`.
    - Stream results and key them by `custom_id`. Skip rows already `imported` or `errored`. Process at most `maxRows` pending rows per call, then return `{ remaining }`. The next call continues where this one stopped, so an import of thousands of rows spreads across cron runs.
-   - `succeeded`: parse and validate with zod. Find the post by `sourceCluster`, or create it (`domain`, `template`, `status: draft`, `sourceCluster`). Write `slug`, `intro`, `summary`, and `meta`, plus `products` (listicle) built from `productSnapshot` in order — `imageUrl` and `affiliateUrl` from the snapshot, `title` and `description` from the output — or `body` (informational) via `toLexical`.
+   - `succeeded`: reject any `stop_reason` other than `end_turn` (refusal, `max_tokens`). Parse and validate with zod, and check that listicle products match the snapshot's ids exactly once each. Find the post by `sourceCluster`, or create it (`domain`, `template`, `status: draft`, `sourceCluster`). Write `title`, `slug`, `intro`, `summary`, and `meta`, plus `products` (listicle) built from `productSnapshot` in order — `imageUrl` and `affiliateUrl` from the snapshot, `title` and `description` from the output — or `body` (informational) via `toLexical`.
    - If the generated slug collides with an existing slug on that domain, append `-2`, `-3`, … before saving.
-   - Record `usage.input_tokens` / `output_tokens` on the request row.
+   - Record `usage.input_tokens` / `output_tokens` on the request row. `inputTokens` currently stores input, cache-write, and cache-read tokens combined, so cost can only be estimated as a range; phase 06 step 5 splits them.
    - `errored` / `expired` / `canceled`, or output failing zod validation: record the error on the row, create no post, and set the cluster back to `unused` so it can be resubmitted.
    - When no rows are `pending`, clusters with a created post become `used`, and the batch becomes `imported` with `importedAt`.
-   - Script: `npm run generation:poll` loops `importBatch` until every non-imported batch has `remaining: 0`.
-   - Route: `GET /api/cron/generation` (`src/app/api/cron/generation/route.ts`, `dynamic = 'force-dynamic'`, `maxDuration` set explicitly) processes one chunk per non-imported batch, then runs step 9's image chunk, then returns. It requires `Authorization: Bearer ${CRON_SECRET}`, compared in constant time.
+   - Script: `npm run generation:poll` loops `importBatch` until every non-imported batch has `remaining: 0`; batches still processing are skipped, or waited on with `-- --wait`. `src/scripts/batch-status.ts` shows each batch's live status without importing.
+   - Route: `GET /api/cron/generation` (`src/app/api/cron/generation/route.ts`, `dynamic = 'force-dynamic'`, `maxDuration` set explicitly) processes one chunk per non-imported batch, then runs step 9's image chunk (skipped while hero images are deferred), then returns. It requires `Authorization: Bearer ${CRON_SECRET}`, compared in constant time.
    - Add `CRON_SECRET` and `IMPORT_CHUNK_SIZE` (default 50) to `.env.example`.
    - The route is reachable only on the admin host (phase 02 proxy). Scheduling it is phase 07.
    **Verify:**
@@ -136,19 +137,19 @@ At production volume — a month of content for several country domains — impo
 
 ## Acceptance Checklist
 
-- [ ] **Step 1:** Anthropic SDK, zod, and vitest are installed, and a server-only client reaches the configured model
-- [ ] **Step 2:** Posts have a unique `sourceCluster`, and an admin-only `generation-batches` collection exists with a migration
-- [ ] **Step 3:** Zod output schemas for both templates exist, with passing validation tests, including ASCII-only slugs
-- [ ] **Step 4:** Generated sections convert to Lexical JSON that saves and renders on the frontend
-- [ ] **Step 5:** Domains carry affiliate marketplace settings, and the mock product source returns marketplace-specific affiliate URLs per domain
+- [x] **Step 1:** Anthropic SDK, zod, and vitest are installed, and a server-only client reaches the configured model
+- [x] **Step 2:** Posts have a unique `sourceCluster`, and an admin-only `generation-batches` collection exists with a migration
+- [x] **Step 3:** Zod output schemas for both templates exist, with passing validation tests, including ASCII-only slugs
+- [x] **Step 4:** Generated sections convert to Lexical JSON that saves and renders on the frontend
+- [x] **Step 5:** Domains carry affiliate marketplace settings, and the mock product source returns marketplace-specific affiliate URLs per domain
 - [ ] **Step 5:** A real affiliate network source returns real products for a domain's country marketplace, rendered in line with the terms review
-- [ ] **Step 6:** System prompts are byte-identical across requests and domains with a cache breakpoint, and user messages carry the locale-specific writing instruction
-- [ ] **Step 7:** `npm run generate` submits one request per cluster for a single domain, snapshots products, and marks clusters `assigned` only after acceptance
-- [ ] **Step 7:** `npm run generate -- --niche <slug>` submits one batch per domain in that niche, and none for domains outside it
-- [ ] **Step 8:** Import creates one post per successful cluster in the domain's language, with products matching the snapshot
-- [ ] **Step 8:** Import runs in resumable chunks, is idempotent, records failures, and returns failed clusters to `unused`
-- [ ] **Step 8:** `/api/cron/generation` rejects requests without `CRON_SECRET`
+- [x] **Step 6:** System prompts are byte-identical across requests and domains with a cache breakpoint, and user messages carry the locale-specific writing instruction
+- [x] **Step 7:** `npm run generate` submits one request per cluster for a single domain, snapshots products, and marks clusters `assigned` only after acceptance
+- [x] **Step 7:** `npm run generate -- --niche <slug>` submits one batch per domain in that niche, and none for domains outside it
+- [x] **Step 8:** Import creates one post per successful cluster in the domain's language, with products matching the snapshot
+- [x] **Step 8:** Import runs in resumable chunks, is idempotent, records failures, and returns failed clusters to `unused`
+- [x] **Step 8:** `/api/cron/generation` rejects requests without `CRON_SECRET`
 - [ ] **Step 9:** Hero images are generated outside the import, in capped retrying chunks, stored in R2 with alt text in the domain's language, attached once, and render on the article page
-- [ ] **Step 10:** Failed clusters can be resubmitted from a batch and produce exactly one post
-- [ ] **Step 11:** `getReadiness` reports missing fields for both templates, with passing tests
-- [ ] **Step 12:** A real end-to-end run produced native-language posts on two domains, and actual token cost was reported against the spec estimate
+- [x] **Step 10:** Failed clusters can be resubmitted from a batch and produce exactly one post
+- [x] **Step 11:** `getReadiness` reports missing fields for both templates, with passing tests
+- [x] **Step 12:** A real end-to-end run produced native-language posts on two domains, and actual token cost was reported against the spec estimate

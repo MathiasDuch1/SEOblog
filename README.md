@@ -44,6 +44,10 @@ Payload's Local API skips access control by default, so a plain `payload.find({ 
 - **Public pages** query through `getPublicPayload()` in `src/lib/public-payload.ts`. It runs every query as an anonymous visitor, so posts are narrowed to `status: 'published'`. ESLint blocks the raw client inside `src/app/(frontend)/` and `src/components/`.
 - **Trusted server work** that must see unpublished content — the generation pipeline, the publish dispatcher, draft preview — uses `getPayloadClient()` directly.
 
+## Scripts that import `server-only` modules
+
+Modules in `src/lib/` start with `import 'server-only'`, which throws outside a React Server Component build. Scripts run through `payload run` therefore set `NODE_OPTIONS=--conditions=react-server`, and end with `--` so flags reach the script (`payload run` otherwise swallows them). Follow the `generate` script in `package.json` when adding new ones.
+
 ## Database schema: push vs. migrations
 
 - **Development** uses Payload's schema **push**: `npm run dev` syncs the schema to the dev database automatically.
@@ -57,6 +61,9 @@ Payload's Local API skips access control by default, so a plain `payload.find({ 
 |---|---|
 | `npm run dev` | Start the dev server |
 | `npm run seed` | Seed development niches, domains, posts, and legal pages (idempotent) |
+| `npm run generate -- --clusters <ids>` | Submit unused keyword clusters (one domain) to Claude's Batch API. Also `--niche <slug>` (one batch per domain in the niche) and `--failed-from <batchDocId>` (resubmit errored clusters) |
+| `npm run generation:poll` | Poll open generation batches and import finished results as draft posts (`-- --wait` keeps polling) |
+| `npm test` | Run the vitest unit tests |
 | `npm run build` | Production build |
 | `npm run lint` | Run ESLint |
 | `npm run generate:types` | Regenerate `src/payload-types.ts` from the Payload config (committed) |

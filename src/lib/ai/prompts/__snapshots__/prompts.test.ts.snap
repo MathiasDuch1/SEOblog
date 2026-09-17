@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`user messages > informational 1`] = `
+"Website: Alpha
+Write in: English for readers in United States (en-US). Write natively for readers in that market — its spelling, units, and cultural references — not as a translation.
+
+Primary keyword: how to start meditating
+Supporting keywords:
+- meditation for beginners
+
+Template: informational
+Target length: 900–1,300 words
+
+Products you may link to where genuinely helpful (use these ids as productRef):
+- id: p1
+  title: Buckwheat zafu cushion
+- id: p2
+  title: Kapok zabuton mat"
+`;
+
+exports[`user messages > listicle 1`] = `
+"Website: Beta
+Write in: Danish for readers in Denmark (da-DK). Write natively for readers in that market — its spelling, units, and cultural references — not as a translation.
+
+Primary keyword: bedste meditationspude
+Supporting keywords:
+- meditationspude boghvede
+- zafu pude
+
+Template: listicle
+Target length: 500–900 words
+
+Products (cover every one exactly once, in this order, using these ids as productRef):
+- id: p1
+  title: Buckwheat zafu cushion
+- id: p2
+  title: Kapok zabuton mat"
+`;
