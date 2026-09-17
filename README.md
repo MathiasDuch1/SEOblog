@@ -63,6 +63,8 @@ Modules in `src/lib/` start with `import 'server-only'`, which throws outside a 
 | `npm run seed` | Seed development niches, domains, posts, and legal pages (idempotent) |
 | `npm run generate -- --clusters <ids>` | Submit unused keyword clusters (one domain) to Claude's Batch API. Also `--niche <slug>` (one batch per domain in the niche) and `--failed-from <batchDocId>` (resubmit errored clusters) |
 | `npm run generation:poll` | Poll open generation batches and import finished results as draft posts (`-- --wait` keeps polling) |
+| `npm run schedule -- --domain <id> --start <YYYY-MM-DD> --days <n>` | Schedule a domain's ready drafts into its free, jittered publish slots (`--posts <ids>` limits it to those drafts; re-runnable) |
+| `npm run cron:dev` | Local cron: calls `/api/cron/publish` every 60s and `/api/cron/generation` every 5 min on the admin host, with `CRON_SECRET` (run alongside `npm run dev`) |
 | `npm test` | Run the vitest unit tests |
 | `npm run build` | Production build |
 | `npm run lint` | Run ESLint |

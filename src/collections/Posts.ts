@@ -1,6 +1,9 @@
 import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
+import { revalidatePostAfterChange, revalidatePostAfterDelete } from '../lib/cache/hooks'
+import { createSlugRedirect } from '../lib/redirects/slugRedirects'
+import { enforceReadiness } from '../lib/scheduling/enforceReadiness'
 import { assertSlugIsFreeOnDomain } from '../lib/slugs'
 
 export const Posts: CollectionConfig = {
@@ -23,6 +26,9 @@ export const Posts: CollectionConfig = {
         return args.data
       },
     ],
+    beforeChange: [enforceReadiness, createSlugRedirect],
+    afterChange: [revalidatePostAfterChange],
+    afterDelete: [revalidatePostAfterDelete],
   },
   fields: [
     {
@@ -103,6 +109,16 @@ export const Posts: CollectionConfig = {
         date: {
           pickerAppearance: 'dayAndTime',
         },
+      },
+    },
+    {
+      name: 'publishError',
+      type: 'textarea',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        condition: (data) => data?.status === 'failed',
+        description: 'Why the publish dispatcher could not publish this post',
       },
     },
     {

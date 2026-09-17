@@ -1,5 +1,6 @@
 import { isAuthorizedCronRequest } from '@/lib/cron'
 import { importBatch, openBatchIds, type ImportResult } from '@/lib/generation/importBatch'
+import { recordSchedulerRun } from '@/lib/scheduling/schedulerStatus'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -26,5 +27,6 @@ export async function GET(request: Request) {
     }
   }
 
+  await recordSchedulerRun('generation', { batches, errors })
   return Response.json({ batches, errors })
 }

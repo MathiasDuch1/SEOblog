@@ -100,15 +100,15 @@ Read these bundled Next.js 16 docs before steps 5–7. `revalidateTag` now takes
 
 ## Acceptance Checklist
 
-- [ ] **Step 1:** Domains have `timezone`, schedule settings, and an auto-generated `indexNowKey`, with a migration
-- [ ] **Step 2:** `computeDailySlots` passes tests for window bounds, per-slot jitter, ordering, EU/US DST days, timezone differences, and `postsPerDay: 1`
-- [ ] **Step 3:** Posts can't be scheduled or published unless `getReadiness` reports them ready
-- [ ] **Step 4:** `npm run schedule` fills one domain's free jittered slots with its ready drafts (≤ postsPerDay per local day), is re-runnable, supports `postIds`, and reports skipped drafts
-- [ ] **Step 5:** A newly published URL returns 200 on its first request after publish in production mode
-- [ ] **Step 6:** Editing a live post updates that page without a rebuild, and a same-slug post on another domain is untouched
-- [ ] **Step 7:** Changing a live slug creates a domain-scoped permanent redirect, without chains or loops
-- [ ] **Step 8:** `/api/cron/publish` requires `CRON_SECRET`, publishes due posts across domains through a reusable `publishPost`, and updates each domain's front page and sitemap
-- [ ] **Step 8:** Concurrent dispatcher runs publish each post exactly once, and publish errors mark the post `failed`
-- [ ] **Step 9:** Each domain serves only its own IndexNow key file, and the dispatcher builds correct per-domain IndexNow payloads in dry-run mode
-- [ ] **Step 10:** The `scheduler-status` global records the last publish and generation-poll runs
-- [ ] **Step 11:** `npm run cron:dev` publishes scheduled posts locally with no manual trigger
+- [x] **Step 1:** Domains have `timezone`, schedule settings, and an auto-generated `indexNowKey`, with a migration
+- [x] **Step 2:** `computeDailySlots` passes tests for window bounds, per-slot jitter, ordering, EU/US DST days, timezone differences, and `postsPerDay: 1`
+- [x] **Step 3:** Posts can't be scheduled or published unless `getReadiness` reports them ready
+- [x] **Step 4:** `npm run schedule` fills one domain's free jittered slots with its ready drafts (≤ postsPerDay per local day), is re-runnable, supports `postIds`, and reports skipped drafts
+- [x] **Step 5:** A newly published URL returns 200 on its first request after publish in production mode
+- [x] **Step 6:** Editing a live post updates that page without a rebuild, and a same-slug post on another domain is untouched
+- [x] **Step 7:** Changing a live slug creates a domain-scoped permanent redirect, without chains or loops
+- [x] **Step 8:** `/api/cron/publish` requires `CRON_SECRET`, publishes due posts across domains through a reusable `publishPost`, and updates each domain's front page and sitemap
+- [x] **Step 8:** Concurrent dispatcher runs publish each post exactly once, and publish errors mark the post `failed`
+- [x] **Step 9:** Each domain serves only its own IndexNow key file, and the dispatcher builds correct per-domain IndexNow payloads in dry-run mode
+- [x] **Step 10:** The `scheduler-status` global records the last publish and generation-poll runs
+- [x] **Step 11:** `npm run cron:dev` publishes scheduled posts locally with no manual trigger

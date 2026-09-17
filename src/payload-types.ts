@@ -75,6 +75,7 @@ export interface Config {
     domains: Domain;
     niches: Niche;
     users: User;
+    redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     domains: DomainsSelect<false> | DomainsSelect<true>;
     niches: NichesSelect<false> | NichesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -99,8 +101,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'scheduler-status': SchedulerStatus;
+  };
+  globalsSelect: {
+    'scheduler-status': SchedulerStatusSelect<false> | SchedulerStatusSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -155,6 +161,10 @@ export interface Post {
   status: 'draft' | 'scheduled' | 'published' | 'failed';
   scheduledAt?: string | null;
   publishedAt?: string | null;
+  /**
+   * Why the publish dispatcher could not publish this post
+   */
+  publishError?: string | null;
   featuredImage?: (number | null) | Media;
   intro?: string | null;
   /**
@@ -224,6 +234,32 @@ export interface Domain {
    * The single language + country this domain publishes in. One of: en-US, da-DK
    */
   locale: string;
+  /**
+   * IANA timezone of this domain's country, e.g. Europe/Copenhagen. The publishing window is in this timezone.
+   */
+  timezone: string;
+  /**
+   * Daily publishing slots, in the domain timezone. Every slot gets random jitter.
+   */
+  schedule: {
+    postsPerDay: number;
+    /**
+     * Local time of the first slot, HH:MM
+     */
+    windowStart: string;
+    /**
+     * Local time of the last slot, HH:MM
+     */
+    windowEnd: string;
+    /**
+     * Each slot moves by a random amount within ± this many minutes
+     */
+    jitterMinutes: number;
+  };
+  /**
+   * Served at /{key}.txt on this domain to prove ownership to IndexNow. Generated automatically.
+   */
+  indexNowKey?: string | null;
   /**
    * Where this domain's listicle products come from — the affiliate marketplace for its country
    */
@@ -435,6 +471,36 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects".
+ */
+export interface Redirect {
+  id: number;
+  /**
+   * Path on this domain, starting with a slash, e.g. /old-slug
+   */
+  from: string;
+  to?: {
+    type?: ('reference' | 'custom') | null;
+    reference?:
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null);
+    url?: string | null;
+  };
+  /**
+   * The redirect only applies on this domain
+   */
+  domain: number | Domain;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -488,6 +554,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'redirects';
+        value: number | Redirect;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -544,6 +614,7 @@ export interface PostsSelect<T extends boolean = true> {
   status?: T;
   scheduledAt?: T;
   publishedAt?: T;
+  publishError?: T;
   featuredImage?: T;
   intro?: T;
   products?:
@@ -673,6 +744,16 @@ export interface DomainsSelect<T extends boolean = true> {
   hostname?: T;
   niche?: T;
   locale?: T;
+  timezone?: T;
+  schedule?:
+    | T
+    | {
+        postsPerDay?: T;
+        windowStart?: T;
+        windowEnd?: T;
+        jitterMinutes?: T;
+      };
+  indexNowKey?: T;
   affiliate?:
     | T
     | {
@@ -725,6 +806,23 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "redirects_select".
+ */
+export interface RedirectsSelect<T extends boolean = true> {
+  from?: T;
+  to?:
+    | T
+    | {
+        type?: T;
+        reference?: T;
+        url?: T;
+      };
+  domain?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -762,6 +860,48 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scheduler-status".
+ */
+export interface SchedulerStatus {
+  id: number;
+  lastPublishRunAt?: string | null;
+  lastPublishResult?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  lastGenerationPollAt?: string | null;
+  lastGenerationPollResult?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scheduler-status_select".
+ */
+export interface SchedulerStatusSelect<T extends boolean = true> {
+  lastPublishRunAt?: T;
+  lastPublishResult?: T;
+  lastGenerationPollAt?: T;
+  lastGenerationPollResult?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

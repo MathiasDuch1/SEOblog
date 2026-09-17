@@ -1,12 +1,28 @@
+import { randomBytes } from 'crypto'
+
 import type { CollectionConfig } from 'payload'
 
+import { revalidateDomainAfterChange } from '../lib/cache/hooks'
 import { isSupportedLocale, SUPPORTED_LOCALES } from '../lib/locales'
+import { isValidTimezone, parseWallClock } from '../lib/scheduling/zonedTime'
 
 export const Domains: CollectionConfig = {
   slug: 'domains',
   admin: {
     group: 'Setup',
     useAsTitle: 'name',
+  },
+  hooks: {
+    beforeChange: [
+      ({ data, originalDoc }) => {
+        // Every domain needs a key; existing domains without one get it on their next save.
+        if (!data.indexNowKey && !originalDoc?.indexNowKey) {
+          data.indexNowKey = randomBytes(16).toString('hex')
+        }
+        return data
+      },
+    ],
+    afterChange: [revalidateDomainAfterChange],
   },
   access: {
     read: () => true,
@@ -51,6 +67,74 @@ export const Domains: CollectionConfig = {
       },
       validate: (value: string | null | undefined) =>
         isSupportedLocale(value) || `Locale must be one of: ${SUPPORTED_LOCALES.join(', ')}`,
+    },
+    {
+      name: 'timezone',
+      type: 'text',
+      required: true,
+      admin: {
+        description:
+          "IANA timezone of this domain's country, e.g. Europe/Copenhagen. The publishing window is in this timezone.",
+      },
+      validate: (value: string | null | undefined) =>
+        isValidTimezone(value) || 'Timezone must be an IANA name such as Europe/Copenhagen',
+    },
+    {
+      name: 'schedule',
+      type: 'group',
+      admin: {
+        description: 'Daily publishing slots, in the domain timezone. Every slot gets random jitter.',
+      },
+      fields: [
+        {
+          name: 'postsPerDay',
+          type: 'number',
+          required: true,
+          defaultValue: 10,
+          min: 1,
+          max: 48,
+        },
+        {
+          name: 'windowStart',
+          type: 'text',
+          required: true,
+          defaultValue: '08:00',
+          admin: { description: 'Local time of the first slot, HH:MM' },
+          validate: (value: string | null | undefined) =>
+            parseWallClock(value) !== null || 'Use 24-hour HH:MM, e.g. 08:00',
+        },
+        {
+          name: 'windowEnd',
+          type: 'text',
+          required: true,
+          defaultValue: '23:30',
+          admin: { description: 'Local time of the last slot, HH:MM' },
+          validate: (value: string | null | undefined, { siblingData }: { siblingData: { windowStart?: string } }) => {
+            const end = parseWallClock(value)
+            if (end === null) return 'Use 24-hour HH:MM, e.g. 23:30'
+            const start = parseWallClock(siblingData?.windowStart)
+            return start === null || end > start || 'The window must end after it starts'
+          },
+        },
+        {
+          name: 'jitterMinutes',
+          type: 'number',
+          required: true,
+          defaultValue: 8,
+          min: 5,
+          max: 10,
+          admin: { description: 'Each slot moves by a random amount within ± this many minutes' },
+        },
+      ],
+    },
+    {
+      name: 'indexNowKey',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Served at /{key}.txt on this domain to prove ownership to IndexNow. Generated automatically.',
+      },
     },
     {
       name: 'affiliate',

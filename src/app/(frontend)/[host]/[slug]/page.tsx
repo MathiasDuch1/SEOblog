@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 
 import { JsonLd } from '@/components/JsonLd'
 
@@ -10,12 +10,14 @@ import { getDomainByHostname } from '@/lib/domains'
 import { getDictionary } from '@/lib/i18n'
 import { getPageBySlug } from '@/lib/pages'
 import { getPostBySlug } from '@/lib/posts'
+import { getRedirectTarget } from '@/lib/redirects/lookup'
 import { buildMetadata } from '@/lib/seo'
 import { pageJsonLd, postJsonLd } from '@/lib/structured-data'
 
 /**
  * One public URL per document: `https://{hostname}/{slug}`, with no locale segment.
- * A slug resolves to a post first, then to a legal/static page, then 404s.
+ * A slug resolves to a post first, then to a legal/static page, then to one of the domain's
+ * redirects (a 308), then 404s. A live document always wins over a redirect.
  *
  * Everything is resolved before rendering starts, so a missing slug returns a real 404
  * status rather than a streamed 200 (see the note in `[host]/layout.tsx`).
@@ -49,7 +51,11 @@ export default async function ContentPage({
 
   if (!post) {
     const page = await getPageBySlug(domain.id, slug)
-    if (!page) notFound()
+    if (!page) {
+      const target = await getRedirectTarget(domain.id, slug)
+      if (target) permanentRedirect(target)
+      notFound()
+    }
     return (
       <>
         <JsonLd data={pageJsonLd(page, domain)} />

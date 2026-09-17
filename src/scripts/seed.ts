@@ -54,6 +54,8 @@ type SeedDomain = {
   name: string
   hostname: string
   locale: string
+  /** Alpha and Gamma share a country and locale; different US timezones keep their calendars apart. */
+  timezone: string
   nicheSlug: string
   primaryColor: string
   accentColor: string
@@ -788,6 +790,7 @@ const domains: SeedDomain[] = [
   {
     name: 'Alpha',
     hostname: 'alpha.localhost',
+    timezone: 'America/New_York',
     locale: 'en-US',
     nicheSlug: 'spirituality',
     primaryColor: '#6d28d9',
@@ -799,6 +802,7 @@ const domains: SeedDomain[] = [
   {
     name: 'Beta',
     hostname: 'beta.localhost',
+    timezone: 'Europe/Copenhagen',
     locale: 'da-DK',
     nicheSlug: 'spirituality',
     primaryColor: '#047857',
@@ -810,6 +814,7 @@ const domains: SeedDomain[] = [
   {
     name: 'Gamma',
     hostname: 'gamma.localhost',
+    timezone: 'America/Los_Angeles',
     locale: 'en-US',
     nicheSlug: 'wellness',
     primaryColor: '#be123c',
@@ -887,6 +892,8 @@ try {
       name: seedDomain.name,
       hostname: seedDomain.hostname,
       locale: seedDomain.locale,
+      timezone: seedDomain.timezone,
+      schedule: { postsPerDay: 10, windowStart: '08:00', windowEnd: '23:30', jitterMinutes: 8 },
       niche: nicheIds[seedDomain.nicheSlug],
       affiliate: seedDomain.affiliate,
       branding: {
@@ -989,6 +996,9 @@ try {
       `Seeded ${seedDomain.hostname} (${seedDomain.locale}) with ${seedDomain.posts.length} posts and ${seedDomain.pages.length} pages`,
     )
   }
+
+  // The cron routes update this global concurrently; create its single row up front.
+  await payload.updateGlobal({ slug: 'scheduler-status', data: {} })
 
   const counts = await Promise.all(
     ['niches', 'domains', 'posts', 'pages', 'media'].map(async (collection) => {

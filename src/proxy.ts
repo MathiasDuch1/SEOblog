@@ -15,6 +15,8 @@ import type { NextRequest } from 'next/server'
 const ADMIN_HOSTNAME = process.env.ADMIN_HOSTNAME ?? 'localhost'
 const IS_PRODUCTION = process.env.SITE_ENV === 'production'
 
+const INDEXNOW_KEY_FILE = /^\/([0-9a-f]{32})\.txt$/
+
 /** Paths that belong to Payload and the admin-only preview, never to a public site. */
 const ADMIN_PATHS = ['/admin', '/api', '/preview']
 
@@ -45,7 +47,11 @@ export function proxy(request: NextRequest): NextResponse {
   }
 
   const url = request.nextUrl.clone()
-  url.pathname = `/${hostname}${pathname === '/' ? '' : pathname}`
+  // IndexNow key files live at the root as `/{32-hex key}.txt`; the route checks the key.
+  const indexNowKey = INDEXNOW_KEY_FILE.exec(pathname)?.[1]
+  url.pathname = indexNowKey
+    ? `/${hostname}/indexnow/${indexNowKey}`
+    : `/${hostname}${pathname === '/' ? '' : pathname}`
   url.search = search
   return withGuards(NextResponse.rewrite(url))
 }

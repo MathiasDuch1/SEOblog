@@ -16,6 +16,8 @@ import { Niches } from './collections/Niches'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
+import { SchedulerStatus } from './globals/SchedulerStatus'
+import { redirects } from './lib/redirects/collection'
 import { postUrl } from './lib/urls'
 
 const filename = fileURLToPath(import.meta.url)
@@ -30,6 +32,7 @@ export default buildConfig({
   },
   // Order sets the sidebar: groups appear in the order of their first collection.
   collections: [Posts, Pages, Media, KeywordClusters, GenerationBatches, Domains, Niches, Users],
+  globals: [SchedulerStatus],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -44,6 +47,7 @@ export default buildConfig({
     },
   }),
   plugins: [
+    redirects,
     s3Storage({
       collections: {
         media: {

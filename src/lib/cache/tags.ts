@@ -26,6 +26,8 @@ export const cacheTags = {
   postList: (domainId: number | string) => `post-list:${domainId}`,
   /** One domain's sitemap, including its chunks. */
   sitemap: (domainId: number | string) => `sitemap:${domainId}`,
+  /** One domain's slug redirects (phase 04). */
+  redirects: (domainId: number | string) => `redirects:${domainId}`,
 } as const
 
 export type CacheTag = ReturnType<(typeof cacheTags)[keyof typeof cacheTags]>

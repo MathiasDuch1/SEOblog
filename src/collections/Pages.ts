@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
+import { revalidatePageAfterChange, revalidatePageAfterDelete } from '../lib/cache/hooks'
+import { createSlugRedirect } from '../lib/redirects/slugRedirects'
 import { assertSlugIsFreeOnDomain } from '../lib/slugs'
 
 /**
@@ -28,6 +30,9 @@ export const Pages: CollectionConfig = {
         return args.data
       },
     ],
+    beforeChange: [createSlugRedirect],
+    afterChange: [revalidatePageAfterChange],
+    afterDelete: [revalidatePageAfterDelete],
   },
   fields: [
     {
