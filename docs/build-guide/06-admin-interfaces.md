@@ -4,7 +4,7 @@
 
 Two purpose-built interfaces live inside the Payload admin (spec §5), on top of the phase 03–05 server functions:
 
-- **SEO interface** (`/admin/seo`): pick a niche, then run Semrush research for a country domain in it, review and edit clusters, and submit bulk generation with a cost preview. Imported posts can be scheduled automatically. Batch status tracking lets you resubmit failed clusters.
+- **SEO interface** (`/admin/seo`): pick a niche, then run DataForSEO research for a country domain in it, review and edit clusters, and submit bulk generation with a cost preview. Imported posts can be scheduled automatically. Batch status tracking lets you resubmit failed clusters.
 - **Editor interface** (`/admin/editor`): filterable article list across domains with readiness status, rendered previews of unpublished posts, a scheduling calendar/timeline per domain, schedule/reschedule actions, and QC attention lists for upcoming **and** live posts (incomplete fields, missing images, broken affiliate links). Every post links into Payload's native edit screen.
 
 Every domain is one country with one language. Wherever the interfaces show a domain, they also show its locale (e.g. `example.dk · da-DK`), so editors always know which market they are working on. Everything renders on the server. Client components are limited to the small interactive leaves listed below.
@@ -33,8 +33,8 @@ Every domain is one country with one language. Wherever the interfaces show a do
    - Run `npm run generate:importmap`.
    **Verify:** logged in, "SEO" and "Editor" nav links appear, and each view renders inside the normal admin chrome. Logged out, `localhost:3000/admin/seo` redirects to login and returns no view HTML.
 
-2. **Build the research panel in the SEO interface.** A form — a plain `<form action={serverAction}>`, no client JS required — with a niche selector (`searchParams`) that narrows the domain list to that niche's domains, domain (shown with its locale and Semrush database), seed keywords (entered in that domain's language), and limit per report. It calls `runResearchAction` then `clusterKeywordsAction` from phase 05. Below it, list recent research runs for the selected domain (from `searchParams`): date, database, seeds, keyword count, units used, status, and a link to review that run's proposed clusters.
-   **Verify:** submitting the form for Beta runs research against the `dk` database and creates proposed clusters with Danish names, and the run shows in the list with units used. Re-submitting identical inputs reuses the stored run (no new units).
+2. **Build the research panel in the SEO interface.** A form — a plain `<form action={serverAction}>`, no client JS required — with a niche selector (`searchParams`) that narrows the domain list to that niche's domains, domain (shown with its locale and DataForSEO location and language), seed keywords (entered in that domain's language), and limit per endpoint. It calls `runResearchAction` then `clusterKeywordsAction` from phase 05. Below it, list recent research runs for the selected domain (from `searchParams`): date, location and language, seeds, keyword count, cost, status, and a link to review that run's proposed clusters.
+   **Verify:** submitting the form for Beta runs research against Denmark's location and Danish (`2208`/`da`) and creates proposed clusters with Danish names, and the run shows in the list with its cost. Re-submitting identical inputs reuses the stored run (no new cost).
 
 3. **Build cluster review.** For a research run, show proposed clusters: name, primary keyword, keywords with volume/KD, suggested template, rationale, and any conflict reasons from `findConflicts`. The inline editor (allowed client leaf) renames a cluster, removes keywords, and overrides the target template, calling `updateClusterAction` / `saveClustersAction`. Conflicting clusters need an explicit "save anyway" choice. A saved-clusters tab lists the domain's `unused` / `assigned` / `used` clusters, filtered via `searchParams`.
    **Verify:** editing a cluster's name and template persists after a full page reload. A conflicting cluster can't be saved without the explicit override. The status filter shows the right counts.
@@ -115,7 +115,7 @@ Every domain is one country with one language. Wherever the interfaces show a do
 ## Acceptance Checklist
 
 - [ ] **Step 1:** `/admin/seo` and `/admin/editor` render inside the admin chrome with nav links, and redirect when logged out
-- [ ] **Step 2:** The research form runs against the selected domain's Semrush database, creates runs and proposed clusters, and identical inputs reuse the stored run
+- [ ] **Step 2:** The research form runs against the selected domain's DataForSEO location and language, creates runs and proposed clusters, and identical inputs reuse the stored run
 - [ ] **Step 3:** Clusters' name, keywords, and template can be edited from the UI, and conflicts require an explicit override
 - [ ] **Step 4:** Bulk generation is scoped to one domain, shows a text + image cost preview, submits one batch, and rejects double submission
 - [ ] **Step 4:** Batches with auto-schedule end with their ready posts scheduled into that domain's free slots

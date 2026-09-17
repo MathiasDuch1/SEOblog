@@ -295,7 +295,10 @@ export interface Media {
  */
 export interface KeywordCluster {
   id: number;
-  source: 'semrush';
+  /**
+   * Where the keywords came from: DataForSEO research (phase 05) or entered by hand
+   */
+  source: 'dataforseo' | 'manual';
   clusterName: string;
   keywords: {
     keyword: string;

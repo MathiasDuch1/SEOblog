@@ -10,7 +10,7 @@ This guide turns [`docs/spec.md`](../spec.md) into seven phases that can each be
 | [02-frontend.md](02-frontend.md) | Public blog frontend | Hostname-based routing (one country domain = one language, no locale paths), admin-host lockdown, front page, both article templates, legal pages, metadata from the SEO plugin, JSON-LD, scalable sitemaps, robots | 01 | — |
 | [03-generation-pipeline.md](03-generation-pipeline.md) | Content generation | Claude Batch API pipeline in each domain's language, per-country affiliate product feed, import in resumable chunks, hero images, resubmitting failed clusters | 01, 02 | Anthropic API, affiliate network, image provider |
 | [04-scheduling.md](04-scheduling.md) | Scheduling & publishing | Jittered slot assignment, publish dispatcher, revalidation, slug-change redirects, IndexNow (dry run), local cron runner | 01–03 | — |
-| [05-keyword-research.md](05-keyword-research.md) | Keyword research | Semrush integration, keyword clustering, cannibalization checks, cluster persistence | 01, 03 | Semrush API units |
+| [05-keyword-research.md](05-keyword-research.md) | Keyword research | DataForSEO integration, keyword clustering, cannibalization checks, cluster persistence | 01, 03 | DataForSEO account |
 | [06-admin-interfaces.md](06-admin-interfaces.md) | Admin interfaces | SEO interface (research → clusters → bulk generation → batches) and Editor interface (article list, preview, calendar, schedule actions, QC) inside Payload admin | 01–05 | — |
 | [07-launch.md](07-launch.md) | Launch & operations | CI, production database/media, staging + production deploys, real domains, hardened admin host, hosted crons, live IndexNow, search consoles, email, monitoring + alerts, runbooks, first live publish | 01–06 | Hosting, production Supabase, DNS, email provider, error tracking, Google Search Console, Bing Webmaster Tools |
 
@@ -72,7 +72,7 @@ These are open items from spec §9. Each phase lists the decisions it needs unde
 | Affiliate network(s) + product feed/API access | 03 | — | **Deferred** — phase 03 uses the `mock` product source only |
 | Affiliate terms: image caching, price display, disclosure wording | 03 | — | Deferred with the network choice |
 | Hero image provider | 03 | Flux via fal.ai | **Deferred** — no generated hero images. Phase 02 seeds placeholder featured images and templates render without one; phase 03 step 9 stays unbuilt. `featuredImage` is not part of `getReadiness`, so posts can be scheduled and published without one. Revisit before launch |
-| Semrush plan with API units | 05 | — | Not purchased yet — buy when phase 05 starts |
+| Keyword data provider | 05 | — | **DataForSEO** (pay-as-you-go Labs API, no subscription; free sandbox for development). Account not opened yet — add balance when phase 05 starts |
 | Human QC cadence | 06 | Review the next 48h of scheduled posts daily; re-check live posts weekly | Default accepted: next 48h of scheduled posts daily, live posts weekly |
 | Hosting platform + cron mechanism | 07 | Must allow crons every 1–5 minutes and long enough function durations | |
 | Production Supabase project + backup plan | 07 | Separate projects for staging and production | |
@@ -93,7 +93,7 @@ src/
     api/health                      health check (phase 07)
   collections/                      Payload collection configs
   components/                       Server Components (client leaves marked in the phase)
-  lib/                              server-only modules: urls, cache, domains, ai, affiliate, images, generation, scheduling, indexnow, semrush, keywords, qc, alerts
+  lib/                              server-only modules: urls, cache, domains, ai, affiliate, images, generation, scheduling, indexnow, dataforseo, keywords, qc, alerts
   scripts/                          `payload run` scripts (seed, generate, poll, regenerate, schedule, research, cron:dev)
   migrations/                       Payload migrations
   payload.config.ts

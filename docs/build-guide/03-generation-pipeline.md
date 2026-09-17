@@ -132,7 +132,7 @@ At production volume — a month of content for several country domains — impo
 
 - Assigning `scheduledAt`, publishing, and revalidation on publish (phase 04).
 - Scheduling the cron routes on a real host (phase 07).
-- Semrush and automatic cluster creation (phase 05). Clusters in this phase are created by hand in the admin.
+- DataForSEO and automatic cluster creation (phase 05). Clusters in this phase are created by hand in the admin.
 - Any admin UI for submitting batches, resubmitting, or reviewing results (phase 06).
 
 ## Acceptance Checklist

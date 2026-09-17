@@ -94,7 +94,7 @@ The SEO plugin is on posts, public read is limited to published content, and the
 
 - Any public page beyond the placeholder homepage (phase 02).
 - Seed data and UI dictionaries (phase 02).
-- Anthropic, affiliate, image-generation, or Semrush code (phases 03 and 05).
+- Anthropic, affiliate, image-generation, or DataForSEO code (phases 03 and 05).
 - Scheduling hooks and cron routes (phase 04).
 - Custom admin views (phase 06).
 

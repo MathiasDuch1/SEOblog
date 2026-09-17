@@ -72,7 +72,7 @@ The phase ends with the first post on a real domain published automatically, end
 
 6. **Connect real country domains.**
    - One dedicated domain per launch country (e.g. `example.de`, `example.co.uk`). For each: add it to the hosting project (automatic TLS), create the DNS records, and add `www.<domain>` with a permanent redirect to the apex (or the reverse, but consistently) at the hosting/DNS level.
-   - Create the `Domain` document in production with the real hostname, `locale`, timezone, schedule, Semrush database, and affiliate marketplace settings for that country.
+   - Create the `Domain` document in production with the real hostname, `locale`, timezone, schedule, DataForSEO location and language, and affiliate marketplace settings for that country.
    - Replace the legal page placeholders with the final texts, written in that domain's language and meeting that country's legal requirements (e.g. Danish privacy and cookie rules for the Danish domain).
    **Verify:** `curl -I http://<domain>` redirects to `https://<domain>`, and `curl -I https://www.<domain>` returns a permanent redirect to `https://<domain>`. The site renders with the correct branding and `<html lang>`, UI strings are in the domain's language, `sitemap.xml` URLs are absolute `https://<domain>/…` with no language prefixes, and the legal pages show the final text.
 
@@ -104,9 +104,9 @@ The phase ends with the first post on a real domain published automatically, end
     **Verify:** both pages score Performance ≥ 90, SEO ≥ 90, and Accessibility ≥ 90, and the image optimization decision is recorded in `00-overview.md`.
 
 13. **Write runbooks.** `docs/runbooks.md`, with numbered steps and exact commands:
-    - **Add a new country domain:** check the locale is in `SUPPORTED_LOCALES` (otherwise follow "Add a new language" first), then the Domain document (locale, timezone, schedule, Semrush database, affiliate marketplace), legal pages in that language, hosting domain + DNS + `www` redirect, Search Console + Bing + sitemap, and the first research run.
+    - **Add a new country domain:** check the locale is in `SUPPORTED_LOCALES` (otherwise follow "Add a new language" first), then the Domain document (locale, timezone, schedule, DataForSEO location and language, affiliate marketplace), legal pages in that language, hosting domain + DNS + `www` redirect, Search Console + Bing + sitemap, and the first research run.
     - **Add a new language:** add the locale code(s) to `src/lib/locales.ts`, add a UI dictionary for the language, add a stop-word list for phase 05 cannibalization checks, deploy. No database migration is needed.
-    - **Rotate a secret:** `CRON_SECRET`, `ANTHROPIC_API_KEY`, R2 token, Semrush key, `PAYLOAD_SECRET` (note that this invalidates sessions).
+    - **Rotate a secret:** `CRON_SECRET`, `ANTHROPIC_API_KEY`, R2 token, DataForSEO API password, `PAYLOAD_SECRET` (note that this invalidates sessions).
     - **Restore the database from backup.**
     - **Respond to each alert type.**
     - **Pause all publishing:** disable the cron or set an env flag the dispatcher honours. Add a `PUBLISHING_PAUSED` check to the phase 04 dispatcher if one doesn't exist.
@@ -115,7 +115,7 @@ The phase ends with the first post on a real domain published automatically, end
 14. **Run the launch rehearsal and first live publish.**
     - **On staging:** research (small limit) → cluster → bulk generate with auto-schedule → import → hero images → scheduled into slots → auto-published by cron → IndexNow dry run → post visible on the staging domain, with no manual intervention after submission.
     - **Then on production:** the same flow for one real domain, with a small batch (e.g. 3 clusters).
-    **Verify:** on production, at least one post generated from Semrush data is published automatically by the cron on a real domain. It renders in the domain's language with the correct `<html lang>`, canonical, `og:locale`, and JSON-LD, appears in `sitemap.xml`, and has a logged IndexNow 200/202. Report actual cost for the run (tokens + images) against spec §8.
+    **Verify:** on production, at least one post generated from DataForSEO data is published automatically by the cron on a real domain. It renders in the domain's language with the correct `<html lang>`, canonical, `og:locale`, and JSON-LD, appears in `sitemap.xml`, and has a logged IndexNow 200/202. Report actual cost for the run (tokens + images) against spec §8.
 
 ## Out of scope
 
@@ -138,4 +138,4 @@ The phase ends with the first post on a real domain published automatically, end
 - [ ] **Step 11:** Failures, stale crons, expiring batches, and QC issues send de-duplicated alert emails, and errors reach error tracking with release tags
 - [ ] **Step 12:** Live pages score ≥ 90 on Performance, SEO, and Accessibility, and the image optimization cost decision is recorded
 - [ ] **Step 13:** Runbooks exist, and the "add a new country domain", "add a new language", and "pause publishing" runbooks were proven on staging
-- [ ] **Step 14:** A post generated from Semrush data was published automatically on a real production domain, end to end, with cost reported
+- [ ] **Step 14:** A post generated from DataForSEO data was published automatically on a real production domain, end to end, with cost reported

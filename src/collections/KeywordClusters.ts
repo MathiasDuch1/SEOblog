@@ -17,8 +17,14 @@ export const KeywordClusters: CollectionConfig = {
       name: 'source',
       type: 'select',
       required: true,
-      defaultValue: 'semrush',
-      options: [{ label: 'Semrush', value: 'semrush' }],
+      defaultValue: 'manual',
+      options: [
+        { label: 'DataForSEO', value: 'dataforseo' },
+        { label: 'Manual', value: 'manual' },
+      ],
+      admin: {
+        description: 'Where the keywords came from: DataForSEO research (phase 05) or entered by hand',
+      },
     },
     {
       name: 'clusterName',

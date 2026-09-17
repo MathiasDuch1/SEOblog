@@ -64,7 +64,7 @@ Both templates map to structured content models (not free-form rich text where a
 | AI text generation | **Anthropic Claude API** (Sonnet 5), via the **Batch API** | Async, pre-generated content fits batch processing perfectly; 50% cheaper than standard API |
 | AI image generation | Separate image API (Flux via fal.ai, Ideogram, DALL·E, or Recraft) | Anthropic does not generate images itself; used only for featured hero images |
 | Product images | Pulled directly from the affiliate network's product feed / API for the domain's country (e.g. Amazon PA-API for amazon.de, or the relevant network's datafeed) | Real product photos are required for trust/compliance; never AI-generate a product image |
-| Keyword research | **Semrush** (via API integration into the SEO admin interface), using the regional database for each domain's country | Source of keywords and keyword clusters that drive article generation |
+| Keyword research | **DataForSEO** Labs API (pay-as-you-go, integrated into the SEO admin interface), using the location and language of each domain's country | Source of keywords with volume, difficulty, and search intent; keywords are grouped into article clusters with Claude |
 | Language | **TypeScript** throughout | Matches your background, and Payload + Next.js are both TypeScript-native |
 
 ---
@@ -80,10 +80,10 @@ Both templates map to structured content models (not free-form rich text where a
 - name, hostname, branding/theme config
 - `niche` — required relationship to Niche; exactly one niche per domain
 - `locale` — the single language + country the domain publishes in (e.g. `de-DE`, `en-GB`, `da-DK`); drives the article language, `<html lang>`, UI strings, and Open Graph locale
-- Semrush regional database, affiliate marketplace settings (product source, marketplace, partner tag), and publishing timezone for that country
+- DataForSEO location and language, affiliate marketplace settings (product source, marketplace, partner tag), and publishing timezone for that country
 
 **KeywordCluster**
-- source (Semrush), cluster name, list of keywords, target domain, target template (listicle/informational), status (`unused` | `assigned` | `used`)
+- source (DataForSEO, or manual), cluster name, list of keywords, target domain, target template (listicle/informational), status (`unused` | `assigned` | `used`)
 - One cluster produces exactly one article, written in the target domain's language
 
 **Post** (one document per article, belonging to exactly one domain)
@@ -121,7 +121,7 @@ Two purpose-built interfaces sit on top of the Payload admin/API, rather than re
 ### 5.1 SEO Interface (generation)
 Used for keyword research and bulk content generation.
 
-- **Semrush integration**: pulls keyword data and generates keyword clusters via the Semrush API, scoped to a chosen domain/niche and using that domain's country database
+- **DataForSEO integration**: pulls keyword data (volume, difficulty, search intent) from the DataForSEO Labs API for a chosen domain/niche, using that domain's country location and language, and groups it into keyword clusters
 - **Cluster review**: displays generated keyword clusters, allows selecting/editing which clusters to use before generation
 - **Bulk generation**: takes a set of approved keyword clusters and generates a month's worth of articles — **one keyword cluster maps to exactly one article**
 - Work is organized by niche: pick a niche, and the interface scopes research, clusters, and generation to the domains in it
@@ -140,7 +140,7 @@ Used for reviewing and correcting individual articles after generation.
 
 ## 6. Content Generation Pipeline
 
-1. **Keyword research**: Via the SEO interface, pull keyword clusters from Semrush for a target domain/niche, using that domain's country database.
+1. **Keyword research**: Via the SEO interface, pull keyword data from DataForSEO for a target domain/niche, using that domain's country location and language, and group it into keyword clusters.
 2. **Cluster-to-article mapping**: Each approved keyword cluster becomes exactly one article — one `Post` document — assigned to the cluster's domain and template, and written in that domain's language.
 3. **Batch job creation**: A script assembles a large batch of generation requests — one per article — each containing the keyword cluster, template type, the domain's language and country, and (for listicle articles) product data pulled from the affiliate feed for that country's marketplace.
 4. **Submit to Claude's Batch API**: All requests submitted as a single async batch job. Cost is 50% cheaper than real-time API calls, and latency (typically minutes to a few hours, SLA up to 24h) is a non-issue since content is generated well ahead of its scheduled publish time.
@@ -196,11 +196,11 @@ Each additional country domain adds 10 posts/day (~$3.50/month with Batch API).
 - Managed Postgres: **$0–25/month** (minimum tier of any provider covers this easily)
 - Image storage on Cloudflare R2 (zero egress fees): a few cents to under $1/month even after a year of accumulated images
 
-### Semrush
-Subscription cost depends on the tier needed for API-based keyword/cluster access — check current Semrush API plan pricing, as this isn't a Claude/Anthropic cost and wasn't covered in prior estimates.
+### DataForSEO
+Pay-as-you-go with no subscription (verify the current minimum top-up). Labs keyword endpoints cost about $0.012 per request plus $0.00012 per returned keyword, so a research run of a few hundred keywords costs a few cents. Research results are stored and reused, and development uses the free sandbox. Expect **well under $10/month** at launch volume.
 
 ### Estimated total
-Roughly **$50–120/month** all-in for AI generation + images + database at 5 domains (excluding Semrush subscription), before hosting/compute and affiliate tooling. This is not expected to be the dominant cost of the project.
+Roughly **$50–120/month** all-in for AI generation + images + database at 5 domains (including DataForSEO research), before hosting/compute and affiliate tooling. This is not expected to be the dominant cost of the project.
 
 ---
 
@@ -210,10 +210,10 @@ Roughly **$50–120/month** all-in for AI generation + images + database at 5 do
 - Define the niches at launch, and which domains belong to each
 - Choose specific affiliate network(s) per country and confirm product feed/API access for image + price data
 - Choose image generation provider (Flux via fal.ai is a good low-cost default)
-- Confirm Semrush API access/tier for keyword cluster generation
+- Open a DataForSEO account and add API balance for keyword research
 - Build Payload collection configs: `Posts`, `Domains`, `KeywordClusters`, `Media`
 - Install and configure the Payload SEO plugin
-- Build the SEO interface (Semrush integration + cluster-to-article batch generation trigger)
+- Build the SEO interface (DataForSEO integration + cluster-to-article batch generation trigger)
 - Build the Editor interface (article list, per-article CMS editing, scheduling calendar)
 - Build the batch generation script (keyword cluster → Claude Batch API → save drafts)
 - Build the cron dispatcher (schedule check → publish → revalidate → sitemap update → IndexNow ping)

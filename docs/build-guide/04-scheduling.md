@@ -96,7 +96,7 @@ Read these bundled Next.js 16 docs before steps 5–7. `revalidateTag` now takes
 
 - Calendar/timeline UI, rescheduling UI, and "schedule drafts" buttons (phase 06). This phase provides the functions and scripts.
 - Hosted cron configuration, live IndexNow submission, and search console setup (phase 07).
-- Semrush (phase 05).
+- DataForSEO keyword research (phase 05).
 
 ## Acceptance Checklist
 
