@@ -10,6 +10,7 @@ export const Niches: CollectionConfig = {
   // Payload would otherwise singularize "niches" to "Nich".
   typescript: { interface: 'Niche' },
   admin: {
+    group: 'Setup',
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'description'],
   },

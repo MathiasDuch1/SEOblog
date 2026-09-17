@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 export const KeywordClusters: CollectionConfig = {
   slug: 'keyword-clusters',
   admin: {
+    group: 'Keyword research',
     useAsTitle: 'clusterName',
     defaultColumns: ['clusterName', 'targetDomain', 'targetTemplate', 'status'],
   },

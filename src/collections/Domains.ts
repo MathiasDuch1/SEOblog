@@ -5,6 +5,7 @@ import { isSupportedLocale, SUPPORTED_LOCALES } from '../lib/locales'
 export const Domains: CollectionConfig = {
   slug: 'domains',
   admin: {
+    group: 'Setup',
     useAsTitle: 'name',
   },
   access: {

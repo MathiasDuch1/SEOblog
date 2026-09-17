@@ -28,7 +28,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Niches, Domains, KeywordClusters, Posts, Pages, GenerationBatches],
+  // Order sets the sidebar: groups appear in the order of their first collection.
+  collections: [Posts, Pages, Media, KeywordClusters, GenerationBatches, Domains, Niches, Users],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

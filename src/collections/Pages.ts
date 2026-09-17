@@ -11,6 +11,7 @@ import { assertSlugIsFreeOnDomain } from '../lib/slugs'
 export const Pages: CollectionConfig = {
   slug: 'pages',
   admin: {
+    group: 'Content',
     useAsTitle: 'title',
     defaultColumns: ['title', 'domain', 'type', 'status'],
   },

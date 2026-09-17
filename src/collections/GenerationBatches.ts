@@ -8,6 +8,7 @@ import type { CollectionConfig } from 'payload'
 export const GenerationBatches: CollectionConfig = {
   slug: 'generation-batches',
   admin: {
+    group: 'Keyword research',
     useAsTitle: 'anthropicBatchId',
     defaultColumns: ['anthropicBatchId', 'domain', 'status', 'submittedAt', 'importedAt'],
   },
