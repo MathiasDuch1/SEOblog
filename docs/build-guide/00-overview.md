@@ -72,7 +72,7 @@ These are open items from spec §9. Each phase lists the decisions it needs unde
 | Affiliate network(s) + product feed/API access | 03 | — | **Deferred** — phase 03 uses the `mock` product source only |
 | Affiliate terms: image caching, price display, disclosure wording | 03 | — | Deferred with the network choice |
 | Hero image provider | 03 | Flux via fal.ai | **Deferred** — no generated hero images. Phase 02 seeds placeholder featured images and templates render without one; phase 03 step 9 stays unbuilt. `featuredImage` is not part of `getReadiness`, so posts can be scheduled and published without one. Revisit before launch |
-| Keyword data provider | 05 | — | **DataForSEO** (pay-as-you-go Labs API, no subscription; free sandbox for development). Account not opened yet — add balance when phase 05 starts |
+| Keyword data provider | 05 | — | **DataForSEO** (pay-as-you-go Labs API, no subscription). Account open with balance; development uses the free sandbox (`DATAFORSEO_BASE_URL`), and only the live verifications spend. A three-endpoint run for one seed at `--limit 20` cost $0.0432 |
 | Human QC cadence | 06 | Review the next 48h of scheduled posts daily; re-check live posts weekly | Default accepted: next 48h of scheduled posts daily, live posts weekly |
 | Hosting platform + cron mechanism | 07 | Must allow crons every 1–5 minutes and long enough function durations | |
 | Production Supabase project + backup plan | 07 | Separate projects for staging and production | |

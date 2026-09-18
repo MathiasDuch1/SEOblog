@@ -1,0 +1,38 @@
+{
+  "version": "0.1.20260916",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0084 sec.",
+  "cost": 0,
+  "tasks_count": 1,
+  "tasks_error": 1,
+  "tasks": [
+    {
+      "id": "09171322-2556-0400-2000-e73683b1931f",
+      "status_code": 40501,
+      "status_message": "Invalid Field: 'location_code'.",
+      "time": "0 sec.",
+      "cost": 0,
+      "result_count": 0,
+      "path": [
+        "v3",
+        "dataforseo_labs",
+        "google",
+        "keyword_ideas",
+        "live"
+      ],
+      "data": {
+        "api": "dataforseo_labs",
+        "function": "keyword_ideas",
+        "se_type": "google",
+        "keywords": [
+          "tarotkort"
+        ],
+        "location_code": 1,
+        "language_code": "da",
+        "limit": 10
+      },
+      "result": null
+    }
+  ]
+}

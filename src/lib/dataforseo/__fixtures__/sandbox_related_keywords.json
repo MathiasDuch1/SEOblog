@@ -1,0 +1,402 @@
+{
+  "version": "0.1.20260916",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0 sec.",
+  "cost": 0,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09171322-2556-0387-2000-41cffbd9696a",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "0 sec.",
+      "cost": 0,
+      "result_count": 1,
+      "path": [
+        "v3",
+        "dataforseo_labs",
+        "google",
+        "related_keywords",
+        "live"
+      ],
+      "data": {
+        "api": "dataforseo_labs",
+        "function": "related_keywords",
+        "se_type": "google",
+        "keyword": "tarotkort",
+        "location_code": 2208,
+        "language_code": "da",
+        "limit": 3,
+        "depth": 1
+      },
+      "result": [
+        {
+          "se_type": "google",
+          "seed_keyword": "phone",
+          "seed_keyword_data": null,
+          "location_code": 2840,
+          "language_code": "en",
+          "total_count": 9,
+          "items_count": 1,
+          "items": [
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "phone",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "2026-08-29 03:38:59 +00:00",
+                  "competition": 0.91,
+                  "competition_level": "HIGH",
+                  "cpc": 4.51,
+                  "search_volume": 673000,
+                  "low_top_of_page_bid": 1.91,
+                  "high_top_of_page_bid": 8,
+                  "categories": [
+                    10007,
+                    10878,
+                    12171
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 673000
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 550000
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 673000
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 550000
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 673000
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 550000
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 673000
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 673000
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 673000
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 550000
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 673000
+                    },
+                    {
+                      "year": 2025,
+                      "month": 8,
+                      "search_volume": 550000
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 22,
+                    "quarterly": 0,
+                    "yearly": 50
+                  }
+                },
+                "keyword_info_normalized_with_bing": {
+                  "last_updated_time": "2026-09-12 06:24:01 +00:00",
+                  "search_volume": 556449,
+                  "is_normalized": true,
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 556449
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 454751
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 556449
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 454751
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 556449
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 454751
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 556449
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 556449
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 556449
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 454751
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 556449
+                    },
+                    {
+                      "year": 2025,
+                      "month": 8,
+                      "search_volume": 454751
+                    }
+                  ]
+                },
+                "keyword_info_normalized_with_clickstream": {
+                  "last_updated_time": "2026-09-12 06:24:01 +00:00",
+                  "search_volume": 557986,
+                  "is_normalized": true,
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 557300
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 451408
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 550523
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 449424
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 547693
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 446297
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 548359
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 550774
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 554234
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 455318
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 554267
+                    },
+                    {
+                      "year": 2025,
+                      "month": 8,
+                      "search_volume": 456006
+                    }
+                  ]
+                },
+                "clickstream_keyword_info": {
+                  "search_volume": 85934,
+                  "last_updated_time": "2026-09-04 02:36:41 +00:00",
+                  "gender_distribution": {
+                    "female": 55,
+                    "male": 45
+                  },
+                  "age_distribution": {
+                    "18-24": 20,
+                    "25-34": 20,
+                    "35-44": 16,
+                    "45-54": 31,
+                    "55-64": 12
+                  },
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 85930
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 87510
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 86440
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 86240
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 86190
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 87210
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 89600
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 90920
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 92190
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 93110
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 94480
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 93620
+                    }
+                  ]
+                },
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": null,
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 54,
+                  "detected_language": "th",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=phone&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "organic",
+                    "people_also_ask",
+                    "ai_overview",
+                    "perspectives",
+                    "images",
+                    "related_searches"
+                  ],
+                  "se_results_count": 201,
+                  "last_updated_time": "2026-07-30 03:40:50 +00:00",
+                  "previous_updated_time": "2026-05-14 18:19:43 +00:00"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 1914,
+                  "dofollow": 1309.3,
+                  "referring_pages": 1614.3,
+                  "referring_domains": 563.3,
+                  "referring_main_domains": 499.3,
+                  "rank": 264,
+                  "main_domain_rank": 688.7,
+                  "last_updated_time": "2026-07-30 03:40:51 +00:00"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "2026-04-29 17:44:32 +00:00"
+                }
+              },
+              "depth": 0,
+              "related_keywords": [
+                "phone app",
+                "phone call",
+                "phone app install",
+                "phone call app",
+                "my phone app",
+                "phone definition",
+                "phone google",
+                "phone app free"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

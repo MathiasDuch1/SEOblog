@@ -34,10 +34,11 @@ const idOf = (value: number | { id: number } | null | undefined) =>
 
 export const customIdFor = (clusterId: number) => `c${clusterId}`
 
-/** Primary keyword is the first keyword until phase 05 adds an explicit field. */
+/** The cluster's primary keyword (falling back to its first keyword) and the rest as supporting keywords. */
 function keywordsOf(cluster: KeywordCluster) {
   const keywords = cluster.keywords.map((k) => k.keyword.trim()).filter(Boolean)
-  return { primaryKeyword: keywords[0] ?? cluster.clusterName, supportingKeywords: keywords.slice(1) }
+  const primaryKeyword = cluster.primaryKeyword?.trim() || keywords[0] || cluster.clusterName
+  return { primaryKeyword, supportingKeywords: keywords.filter((k) => k !== primaryKeyword) }
 }
 
 function buildRequest(cluster: KeywordCluster, domain: Domain, products: Product[]): BatchRequest {

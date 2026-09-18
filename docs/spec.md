@@ -84,6 +84,11 @@ Both templates map to structured content models (not free-form rich text where a
 
 **KeywordCluster**
 - source (DataForSEO, or manual), cluster name, list of keywords, target domain, target template (listicle/informational), status (`unused` | `assigned` | `used`)
+- `primaryKeyword` — the keyword the article targets; generation prompts are built around it. Manual clusters default it to their first keyword
+- `coreKeyword` — DataForSEO's synonym group for the primary keyword, used to catch duplicate clusters on the same domain
+- Per keyword: search volume, keyword difficulty, CPC, and search intent, as returned for that domain's country
+- `suggestedTemplate` (from clustering) and `rationale` (one sentence on why these keywords make one article); `targetTemplate` defaults to the suggestion but stays editable
+- `researchRun` — the research run the keywords came from, when the source is DataForSEO
 - One cluster produces exactly one article, written in the target domain's language
 
 **Post** (one document per article, belonging to exactly one domain)
@@ -104,6 +109,11 @@ Both templates map to structured content models (not free-form rich text where a
 - `body`: rich text / structured sections (informational template only)
 - `summary`
 - SEO fields (managed by the Payload SEO plugin)
+
+**KeywordResearchRun** (internal; added in build phase 05)
+- One DataForSEO request for one domain: the location and language used, the seed topics, which Labs endpoints ran, the returned keyword rows (deduped), the reported cost, and status
+- Keyword data is per country, so a seed topic is researched once per country domain — only the topic is shared between countries, never the data
+- Identical requests within 30 days reuse the stored run instead of paying DataForSEO again, which is why runs are stored rather than discarded after clustering
 
 **GenerationBatch** (internal; added in build phase 03)
 - One Claude Message Batch for one domain: the Anthropic batch ID, status, and one row per requested cluster with its import state, resulting post, error, and token usage

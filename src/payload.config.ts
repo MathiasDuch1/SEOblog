@@ -11,6 +11,7 @@ import sharp from 'sharp'
 import { Domains } from './collections/Domains'
 import { GenerationBatches } from './collections/GenerationBatches'
 import { KeywordClusters } from './collections/KeywordClusters'
+import { KeywordResearchRuns } from './collections/KeywordResearchRuns'
 import { Media } from './collections/Media'
 import { Niches } from './collections/Niches'
 import { Pages } from './collections/Pages'
@@ -31,7 +32,7 @@ export default buildConfig({
     },
   },
   // Order sets the sidebar: groups appear in the order of their first collection.
-  collections: [Posts, Pages, Media, KeywordClusters, GenerationBatches, Domains, Niches, Users],
+  collections: [Posts, Pages, Media, KeywordClusters, KeywordResearchRuns, GenerationBatches, Domains, Niches, Users],
   globals: [SchedulerStatus],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

@@ -19,6 +19,7 @@
     "generate": "NODE_OPTIONS=--conditions=react-server payload run src/scripts/generate.ts --",
     "generation:poll": "NODE_OPTIONS=--conditions=react-server payload run src/scripts/generation-poll.ts --",
     "schedule": "NODE_OPTIONS=--conditions=react-server payload run src/scripts/schedule.ts --",
+    "research": "NODE_OPTIONS=--conditions=react-server payload run src/scripts/research.ts --",
     "cron:dev": "payload run src/scripts/cron-dev.ts"
   },
   "dependencies": {

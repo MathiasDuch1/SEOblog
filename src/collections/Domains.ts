@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto'
 import type { CollectionConfig } from 'payload'
 
 import { revalidateDomainAfterChange } from '../lib/cache/hooks'
+import { validateDomainTarget } from '../lib/dataforseo/validateDomainTarget'
 import { isSupportedLocale, SUPPORTED_LOCALES } from '../lib/locales'
 import { isValidTimezone, parseWallClock } from '../lib/scheduling/zonedTime'
 
@@ -13,6 +14,7 @@ export const Domains: CollectionConfig = {
     useAsTitle: 'name',
   },
   hooks: {
+    beforeValidate: [validateDomainTarget],
     beforeChange: [
       ({ data, originalDoc }) => {
         // Every domain needs a key; existing domains without one get it on their next save.
@@ -159,6 +161,29 @@ export const Domains: CollectionConfig = {
           name: 'partnerTag',
           type: 'text',
           admin: { description: 'Affiliate partner/tracking tag added to every product link' },
+        },
+      ],
+    },
+    {
+      name: 'dataforseo',
+      label: 'DataForSEO',
+      type: 'group',
+      admin: {
+        description:
+          "Where keyword research runs for this domain — the DataForSEO location and language of its country. The language must match the locale.",
+      },
+      fields: [
+        {
+          name: 'locationCode',
+          type: 'number',
+          required: true,
+          admin: { description: 'DataForSEO location code, e.g. 2840 (United States) or 2208 (Denmark)' },
+        },
+        {
+          name: 'languageCode',
+          type: 'text',
+          required: true,
+          admin: { description: 'DataForSEO language code, e.g. en or da' },
         },
       ],
     },

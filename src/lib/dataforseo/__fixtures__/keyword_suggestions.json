@@ -1,0 +1,54 @@
+{
+  "version": "0.1.20260901",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.4410 sec.",
+  "cost": 0.01224,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "09171510-1535-0387-0000-7b2c3d4e5f60",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "0.3902 sec.",
+      "cost": 0.01224,
+      "result_count": 1,
+      "path": ["v3", "dataforseo_labs", "google", "keyword_suggestions", "live"],
+      "data": { "api": "dataforseo_labs", "function": "keyword_suggestions", "se_type": "google", "keyword": "tarot deck", "location_code": 2840, "language_code": "en", "limit": 2 },
+      "result": [
+        {
+          "se_type": "google",
+          "seed_keyword": "tarot deck",
+          "seed_keyword_data": null,
+          "location_code": 2840,
+          "language_code": "en",
+          "total_count": 1480,
+          "items_count": 2,
+          "offset": 0,
+          "offset_token": "eyJDdXJyZW50T2Zmc2V0IjoyfQ==",
+          "items": [
+            {
+              "se_type": "google",
+              "keyword": "best tarot decks",
+              "location_code": 2840,
+              "language_code": "en",
+              "keyword_info": { "se_type": "google", "competition": 1, "competition_level": "HIGH", "cpc": 0.88, "search_volume": 6600 },
+              "keyword_properties": { "se_type": "google", "core_keyword": "best tarot deck", "synonym_clustering_algorithm": "text_processing", "keyword_difficulty": 31, "detected_language": "en", "is_another_language": false, "words_count": 3 },
+              "search_intent_info": { "se_type": "google", "main_intent": "commercial", "foreign_intent": null }
+            },
+            {
+              "se_type": "google",
+              "keyword": "tarot deck for beginners",
+              "location_code": 2840,
+              "language_code": "en",
+              "keyword_info": { "se_type": "google", "competition": 0.71, "competition_level": "HIGH", "cpc": 0.64, "search_volume": 2400 },
+              "keyword_properties": { "se_type": "google", "core_keyword": null, "synonym_clustering_algorithm": null, "keyword_difficulty": 27, "detected_language": "en", "is_another_language": false, "words_count": 4 },
+              "search_intent_info": { "se_type": "google", "main_intent": "something_new", "foreign_intent": null }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -78,12 +78,12 @@ Keyword clusters are created from DataForSEO data instead of by hand. A research
 
 ## Acceptance Checklist
 
-- [ ] **Step 1:** Each domain has a required DataForSEO location and language matching its locale, with a migration
-- [ ] **Step 2:** The DataForSEO client parses fixture responses and failed tasks in tests, and works against the sandbox
-- [ ] **Step 2:** A live DataForSEO call returns typed rows in the domain's language and reports its cost
-- [ ] **Step 3:** Research runs are stored, and identical requests within 30 days reuse the stored run without new API cost
-- [ ] **Step 4:** Clustering collapses `core_keyword` variants and returns validated clusters using only input keywords, each keyword in at most one cluster
-- [ ] **Step 5:** Cannibalization detection flags same-domain duplicates and overlaps using `core_keyword` and language-aware normalization, and ignores other domains
-- [ ] **Step 6:** Clusters persist as `unused` DataForSEO clusters with metrics, suggested template, target domain, and run link; conflicts are refused unless allowed
-- [ ] **Step 7:** Keyword Server Actions require an authenticated user, validate input, and refuse edits to non-`unused` clusters
-- [ ] **Step 8:** A live research → cluster → save → generate flow produced a native-language draft post on a country domain from that country's DataForSEO data
+- [x] **Step 1:** Each domain has a required DataForSEO location and language matching its locale, with a migration
+- [x] **Step 2:** The DataForSEO client parses fixture responses and failed tasks in tests, and works against the sandbox
+- [x] **Step 2:** A live DataForSEO call returns typed rows in the domain's language and reports its cost
+- [x] **Step 3:** Research runs are stored, and identical requests within 30 days reuse the stored run without new API cost
+- [x] **Step 4:** Clustering collapses `core_keyword` variants and returns validated clusters using only input keywords, each keyword in at most one cluster
+- [x] **Step 5:** Cannibalization detection flags same-domain duplicates and overlaps using `core_keyword` and language-aware normalization, and ignores other domains
+- [x] **Step 6:** Clusters persist as `unused` DataForSEO clusters with metrics, suggested template, target domain, and run link; conflicts are refused unless allowed
+- [x] **Step 7:** Keyword Server Actions require an authenticated user, validate input, and refuse edits to non-`unused` clusters
+- [x] **Step 8:** A live research → cluster → save → generate flow produced a native-language draft post on a country domain from that country's DataForSEO data

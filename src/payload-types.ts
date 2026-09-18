@@ -71,6 +71,7 @@ export interface Config {
     pages: Page;
     media: Media;
     'keyword-clusters': KeywordCluster;
+    'keyword-research-runs': KeywordResearchRun;
     'generation-batches': GenerationBatch;
     domains: Domain;
     niches: Niche;
@@ -87,6 +88,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'keyword-clusters': KeywordClustersSelect<false> | KeywordClustersSelect<true>;
+    'keyword-research-runs': KeywordResearchRunsSelect<false> | KeywordResearchRunsSelect<true>;
     'generation-batches': GenerationBatchesSelect<false> | GenerationBatchesSelect<true>;
     domains: DomainsSelect<false> | DomainsSelect<true>;
     niches: NichesSelect<false> | NichesSelect<true>;
@@ -277,6 +279,19 @@ export interface Domain {
      */
     partnerTag?: string | null;
   };
+  /**
+   * Where keyword research runs for this domain — the DataForSEO location and language of its country. The language must match the locale.
+   */
+  dataforseo: {
+    /**
+     * DataForSEO location code, e.g. 2840 (United States) or 2208 (Denmark)
+     */
+    locationCode: number;
+    /**
+     * DataForSEO language code, e.g. en or da
+     */
+    languageCode: string;
+  };
   branding?: {
     logo?: (number | null) | Media;
     primaryColor?: string | null;
@@ -336,18 +351,98 @@ export interface KeywordCluster {
    */
   source: 'dataforseo' | 'manual';
   clusterName: string;
+  /**
+   * The keyword the article targets. Defaults to the first keyword.
+   */
+  primaryKeyword?: string | null;
+  /**
+   * DataForSEO's synonym group for the primary keyword, used to catch duplicate clusters
+   */
+  coreKeyword?: string | null;
   keywords: {
     keyword: string;
     searchVolume?: number | null;
+    keywordDifficulty?: number | null;
+    /**
+     * USD
+     */
+    cpc?: number | null;
+    intent?: ('informational' | 'navigational' | 'commercial' | 'transactional') | null;
     id?: string | null;
   }[];
+  /**
+   * Why these keywords make one article, from clustering
+   */
+  rationale?: string | null;
   targetDomain: number | Domain;
   targetTemplate: 'listicle' | 'informational';
+  /**
+   * Template suggested by clustering from search intent
+   */
+  suggestedTemplate?: ('listicle' | 'informational') | null;
   status: 'unused' | 'assigned' | 'used';
+  /**
+   * The DataForSEO research run these keywords came from
+   */
+  researchRun?: (number | null) | KeywordResearchRun;
   /**
    * The article generated from this cluster, once created
    */
   post?: (number | null) | Post;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "keyword-research-runs".
+ */
+export interface KeywordResearchRun {
+  id: number;
+  label?: string | null;
+  domain: number | Domain;
+  /**
+   * Copied from the domain when the run started
+   */
+  locationCode: number;
+  /**
+   * Copied from the domain when the run started
+   */
+  languageCode: string;
+  /**
+   * Seed topics, in the domain's language
+   */
+  seedKeywords: {
+    keyword: string;
+    id?: string | null;
+  }[];
+  endpoints: ('related_keywords' | 'keyword_suggestions' | 'keyword_ideas')[];
+  /**
+   * Keywords requested per DataForSEO call
+   */
+  limitPerEndpoint: number;
+  /**
+   * Hash of location, language, seeds, endpoints, and limit — identical requests share it
+   */
+  requestKey: string;
+  status: 'running' | 'complete' | 'failed';
+  /**
+   * Total DataForSEO cost reported for this run
+   */
+  costUsd?: number | null;
+  rowCount?: number | null;
+  /**
+   * Typed keyword rows, deduped by normalized keyword
+   */
+  rows?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  error?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -540,6 +635,10 @@ export interface PayloadLockedDocument {
         value: number | KeywordCluster;
       } | null)
     | ({
+        relationTo: 'keyword-research-runs';
+        value: number | KeywordResearchRun;
+      } | null)
+    | ({
         relationTo: 'generation-batches';
         value: number | GenerationBatch;
       } | null)
@@ -684,17 +783,51 @@ export interface MediaSelect<T extends boolean = true> {
 export interface KeywordClustersSelect<T extends boolean = true> {
   source?: T;
   clusterName?: T;
+  primaryKeyword?: T;
+  coreKeyword?: T;
   keywords?:
     | T
     | {
         keyword?: T;
         searchVolume?: T;
+        keywordDifficulty?: T;
+        cpc?: T;
+        intent?: T;
         id?: T;
       };
+  rationale?: T;
   targetDomain?: T;
   targetTemplate?: T;
+  suggestedTemplate?: T;
   status?: T;
+  researchRun?: T;
   post?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "keyword-research-runs_select".
+ */
+export interface KeywordResearchRunsSelect<T extends boolean = true> {
+  label?: T;
+  domain?: T;
+  locationCode?: T;
+  languageCode?: T;
+  seedKeywords?:
+    | T
+    | {
+        keyword?: T;
+        id?: T;
+      };
+  endpoints?: T;
+  limitPerEndpoint?: T;
+  requestKey?: T;
+  status?: T;
+  costUsd?: T;
+  rowCount?: T;
+  rows?: T;
+  error?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -760,6 +893,12 @@ export interface DomainsSelect<T extends boolean = true> {
         source?: T;
         marketplace?: T;
         partnerTag?: T;
+      };
+  dataforseo?:
+    | T
+    | {
+        locationCode?: T;
+        languageCode?: T;
       };
   branding?:
     | T
